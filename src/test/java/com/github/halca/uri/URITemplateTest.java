@@ -8,6 +8,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class URITemplateTest {
 
     @Test
+    public void shouldExpandPreEncodedValueCorrectly() {
+        String s = new URITemplate("http://www.example{+tld}")
+                .expand("tld", "{.domain}")
+                .toString();
+        assertEquals("http://www.example{.domain}", s);
+    }
+
+    @Test
     public void shouldParsePathTemplateWithMultipleSegmentsCorrectly() {
         String s = new URITemplate("http://www.example.com/{name}/{value}").toString();
         assertEquals("http://www.example.com/{name}/{value}", s);
