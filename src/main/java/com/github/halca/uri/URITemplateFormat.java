@@ -212,4 +212,10 @@ public class URITemplateFormat {
         appendTemplate(builder, false, asList(names));
         return builder.toString();
     }
+
+    public List<URITemplateVariable> parse(List<String> strings) {
+        return strings.stream()
+                .map(URITemplateVariable::parse)
+                .collect(toList());
+    }
 }

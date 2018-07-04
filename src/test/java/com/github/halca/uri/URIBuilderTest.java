@@ -2,7 +2,7 @@ package com.github.halca.uri;
 
 import org.junit.jupiter.api.Test;
 
-import static com.github.halca.uri.URIFactory.*;
+import static com.github.halca.uri.URITemplateVariable.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class URIBuilderTest {
@@ -59,7 +59,7 @@ public class URIBuilderTest {
     @Test
     public void shouldAppendPathTemplateCorrectly() {
         String s = new URIBuilder("http://www.example.com")
-                .relative("api", "items", var("name"))
+                .relative("api", "items", template("name"))
                 .toString();
         assertEquals("http://www.example.com/api/items/{name}", s);
     }
@@ -67,7 +67,7 @@ public class URIBuilderTest {
     @Test
     public void shouldAppendPathTemplateWithMultipleSegmentsCorrectly() {
         String s = new URIBuilder("http://www.example.com")
-                .relative("api", "items", var("name"), var("value"))
+                .relative("api", "items", template("name"), template("value"))
                 .toString();
         assertEquals("http://www.example.com/api/items/{name}/{value}", s);
     }
@@ -83,7 +83,7 @@ public class URIBuilderTest {
     @Test
     public void shouldAppendVariableToPathCorrectly() {
         String s = new URIBuilder("http://www.example.com/api/")
-                .append(var("name"))
+                .append(template("name"))
                 .toString();
         assertEquals("http://www.example.com/api/{name}", s);
     }
@@ -91,7 +91,7 @@ public class URIBuilderTest {
     @Test
     public void shouldAppendVariableToHostCorrectly() {
         String s = new URIBuilder("http://www.example")
-                .append(var("tld").preEncoded())
+                .append(preEncoded("tld"))
                 .toString();
         assertEquals("http://www.example{+tld}", s);
     }
@@ -107,7 +107,7 @@ public class URIBuilderTest {
     @Test
     public void shouldExpandPathTemplateCorrectly() {
         String s = new URIBuilder("http://www.example.com")
-                .relative("api", "items", var("name"))
+                .relative("api", "items", template("name"))
                 .asTemplate()
                 .expand("name", "1")
                 .toString();
@@ -151,6 +151,17 @@ public class URIBuilderTest {
         String uri = "http://user:password@www.example.com:8443/path?query=value#fragment";
         String result = new URIBuilder(uri).asTemplate().toString();
         assertEquals(uri, result);
+    }
+
+    @Test
+    public void shouldAppendUriTemplateCorrectly() {
+        String uri = "http://www.example.com";
+        String result = new URIBuilder(uri)
+                .resolve("/users{/id}{?expand}")
+                .expand("id", 1)
+                .expand("expand", "all")
+                .toString();
+        assertEquals("http://www.example.com/users/1?expand=all", result);
     }
 
 }

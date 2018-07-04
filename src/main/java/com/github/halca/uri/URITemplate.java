@@ -1,7 +1,9 @@
 package com.github.halca.uri;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class URITemplate {
@@ -10,6 +12,14 @@ public class URITemplate {
 
     URITemplate(String string) {
         this.value = string;
+    }
+
+    public boolean matches(String uri) {
+        return matches(URI.create(uri));
+    }
+
+    public boolean matches(URI uri) {
+        return false;
     }
 
     public URITemplate expand(String name, Object value) {
@@ -40,4 +50,16 @@ public class URITemplate {
     public String toString() {
         return this.value;
     }
+
+    public List<URITemplateVariable> variables() {
+        List<URITemplateVariable> vars = new ArrayList<>();
+        URITemplateParser.parse(value, new URITemplateParserListener.Adapter() {
+            @Override
+            public void onVariable(URITemplateVariable var) {
+                vars.add(var);
+            }
+        });
+        return vars;
+    }
+
 }

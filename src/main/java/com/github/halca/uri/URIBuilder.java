@@ -4,7 +4,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.function.Consumer;
 
-import static com.github.halca.uri.URITemplateFormat.*;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.joining;
 
@@ -83,21 +82,21 @@ public class URIBuilder {
     }
 
     public URIBuilder append(URITemplateVariable variable) {
-        if (variable.modifier() == null) {
+        if (!variable.modifier().isPresent()) {
             lastSegment().accept(variable);
         } else {
-            switch (variable.modifier()) {
-                case DOMAIN_SEPARATOR:
+            switch (variable.modifier().get()) {
+                case DOMAIN:
                     host().accept(variable);
                     break;
-                case PATH_SEPARATOR:
+                case PATH:
                     path().accept(variable);
                     break;
                 case QUERY_START:
-                case QUERY_SEPARATOR:
+                case QUERY:
                     query().accept(variable);
                     break;
-                case FRAGMENT_START:
+                case FRAGMENT:
                     fragment().accept(variable);
                     break;
                 default:
@@ -215,4 +214,7 @@ public class URIBuilder {
         return sb.toString();
     }
 
+    public URITemplate resolve(String relativeUri) {
+        return new URITemplate(this.toDecodedString() + relativeUri);
+    }
 }
