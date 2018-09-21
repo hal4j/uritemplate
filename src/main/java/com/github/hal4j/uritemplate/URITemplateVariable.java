@@ -1,12 +1,12 @@
-package com.github.halca.uri;
+package com.github.hal4j.uritemplate;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.github.halca.uri.URITemplateModifier.*;
-import static com.github.halca.uri.URIVarComponent.var;
+import static com.github.hal4j.uritemplate.URITemplateModifier.*;
+import static com.github.hal4j.uritemplate.URIVarComponent.var;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;

@@ -1,8 +1,7 @@
-package com.github.halca.uri;
+package com.github.hal4j.uritemplate;
 
 import org.junit.jupiter.api.Test;
 
-import static com.github.halca.uri.URITemplateVariable.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class URIBuilderTest {
@@ -59,7 +58,7 @@ public class URIBuilderTest {
     @Test
     public void shouldAppendPathTemplateCorrectly() {
         String s = new URIBuilder("http://www.example.com")
-                .relative("api", "items", template("name"))
+                .relative("api", "items", URITemplateVariable.template("name"))
                 .toString();
         assertEquals("http://www.example.com/api/items/{name}", s);
     }
@@ -67,7 +66,7 @@ public class URIBuilderTest {
     @Test
     public void shouldAppendPathTemplateWithMultipleSegmentsCorrectly() {
         String s = new URIBuilder("http://www.example.com")
-                .relative("api", "items", template("name"), template("value"))
+                .relative("api", "items", URITemplateVariable.template("name"), URITemplateVariable.template("value"))
                 .toString();
         assertEquals("http://www.example.com/api/items/{name}/{value}", s);
     }
@@ -75,7 +74,7 @@ public class URIBuilderTest {
     @Test
     public void shouldAppendPathVariableCorrectly() {
         String s = new URIBuilder("http://www.example.com")
-                .append(pathVariable("name"))
+                .append(URITemplateVariable.pathVariable("name"))
                 .toString();
         assertEquals("http://www.example.com{/name}", s);
     }
@@ -83,7 +82,7 @@ public class URIBuilderTest {
     @Test
     public void shouldAppendVariableToPathCorrectly() {
         String s = new URIBuilder("http://www.example.com/api/")
-                .append(template("name"))
+                .append(URITemplateVariable.template("name"))
                 .toString();
         assertEquals("http://www.example.com/api/{name}", s);
     }
@@ -91,7 +90,7 @@ public class URIBuilderTest {
     @Test
     public void shouldAppendVariableToHostCorrectly() {
         String s = new URIBuilder("http://www.example")
-                .append(preEncoded("tld"))
+                .append(URITemplateVariable.preEncoded("tld"))
                 .toString();
         assertEquals("http://www.example{+tld}", s);
     }
@@ -99,7 +98,7 @@ public class URIBuilderTest {
     @Test
     public void shouldAppendQueryParamTemplateCorrectly() {
         String s = new URIBuilder("http://www.example.com/api")
-                .append(queryStart("name"))
+                .append(URITemplateVariable.queryStart("name"))
                 .toString();
         assertEquals("http://www.example.com/api{?name}", s);
     }
@@ -107,7 +106,7 @@ public class URIBuilderTest {
     @Test
     public void shouldExpandPathTemplateCorrectly() {
         String s = new URIBuilder("http://www.example.com")
-                .relative("api", "items", template("name"))
+                .relative("api", "items", URITemplateVariable.template("name"))
                 .asTemplate()
                 .expand("name", "1")
                 .toString();

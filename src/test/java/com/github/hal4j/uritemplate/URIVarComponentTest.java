@@ -1,8 +1,7 @@
-package com.github.halca.uri;
+package com.github.hal4j.uritemplate;
 
 import org.junit.jupiter.api.Test;
 
-import static com.github.halca.uri.URIVarComponent.PREFIX_SEPARATOR;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class URIVarComponentTest {
@@ -21,7 +20,7 @@ public class URIVarComponentTest {
 
     @Test
     public void shouldCorrectlyParseComponentWithLengthPrefix() {
-        URIVarComponent component = URIVarComponent.parse(SOME_NAME + PREFIX_SEPARATOR + SOME_LENGTH);
+        URIVarComponent component = URIVarComponent.parse(SOME_NAME + URIVarComponent.PREFIX_SEPARATOR + SOME_LENGTH);
         assertNotNull(component);
         assertEquals(SOME_NAME, component.name());
         assertFalse(component.explode());

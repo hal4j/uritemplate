@@ -1,12 +1,11 @@
-package com.github.halca.uri;
+package com.github.hal4j.uritemplate;
 
 import org.junit.jupiter.api.Test;
 
-import static com.github.halca.uri.AdvancedAssertions.assertForEach;
-import static com.github.halca.uri.URITemplateModifier.valueOf;
-import static com.github.halca.uri.URITemplateVariable.template;
-import static com.github.halca.uri.URIVarComponent.prefix;
-import static com.github.halca.uri.URIVarComponent.var;
+import static com.github.hal4j.uritemplate.URITemplateModifier.valueOf;
+import static com.github.hal4j.uritemplate.URITemplateVariable.template;
+import static com.github.hal4j.uritemplate.URIVarComponent.prefix;
+import static com.github.hal4j.uritemplate.URIVarComponent.var;
 import static java.util.Arrays.stream;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,7 +26,7 @@ public class URITemplateVariableTest {
 
     @Test
     public void shouldRejectVarNameStartingWithModifierCharacter() {
-        assertForEach(
+        AdvancedAssertions.assertForEach(
                 stream(URITemplateModifier.values()).map(URITemplateModifier::modifierChar),
                 character -> assertThrows(URITemplateSyntaxException.class,
                         () -> URITemplateVariable.template(character + SOME_NAME),

@@ -1,4 +1,4 @@
-package com.github.halca.uri;
+package com.github.hal4j.uritemplate;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
