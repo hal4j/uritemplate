@@ -196,7 +196,7 @@ public class URITemplateParserTest {
         String uri = "http://www.example.com/rels/{p1}/{p2}";
         String expected = "http://www.example.com/rels/v1/v2";
         String result = parseAndExpand(uri,
-                Map.of("p1", singletonList("v1"), "p2", singletonList("v2")));
+                mapOf("p1", singletonList("v1"), "p2", singletonList("v2")));
         assertEquals(expected, result);
     }
 
@@ -306,4 +306,12 @@ public class URITemplateParserTest {
         String result = parseAndExpand(uri, LIST);
         assertEquals(expected, result);
     }
+
+    private static <K,V> Map<K,V> mapOf(K key1, V value1, K key2, V value2) {
+        Map<K, V> map =new HashMap<>();
+        map.put(key1, value1);
+        map.put(key2, value2);
+        return map;
+    }
+
 }

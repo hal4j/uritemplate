@@ -9,6 +9,31 @@ public class URIVarComponent {
 
     public static final char PREFIX_SEPARATOR = ':';
     public static final char EXPLODE_MODIFIER = '*';
+    // Variable name regular expressions:
+    /**
+     * pct-encoded character as defined in RFC 6570 section 1.5:
+     * <pre>
+     * DIGIT        =  %x30-39             ; 0-9
+     * HEXDIG       =  DIGIT / "A" / "B" / "C" / "D" / "E" / "F"
+     *                       ; case-insensitive
+     * pct-encoded  =  "%" HEXDIG HEXDIG
+     * </pre>
+     */
+    public static final String PCT_ENCODED = "%([0-9a-f]){2}";
+    /**
+     * varchar specification according to RFC 6570 section 2.3:
+     * <pre>
+     * varchar  =  ALPHA / DIGIT / "_" / pct-encoded
+     * </pre>
+     */
+    public static final String VARCHAR = "\\w|(" + PCT_ENCODED + ")";
+    /**
+     * varname specification according to RFC 6570 section 2.3:
+     * <pre>
+     * varname  =  varchar *( ["."] varchar )
+     * </pre>
+     */
+    public static final String VARNAME = "(?i)(" + VARCHAR + ")+(\\.(" + VARCHAR + ")+)*";
 
     private final String name;
 
@@ -55,7 +80,9 @@ public class URIVarComponent {
         if (name == null) {
             throw new NullPointerException("name");
         }
-        // TODO: add name validation
+        if (!name.matches(VARNAME)) {
+            throw new URITemplateSyntaxException(format("Name (%s) must be (varchar *([\".\"] varchar))", name));
+        }
         this.name = name;
         if (prefixLength != null && (prefixLength <= 0 || prefixLength > 10000)) {
             throw new URITemplateSyntaxException(format("Prefix length (%d) must be an integer number between 1 and 10000 inclusive", prefixLength));

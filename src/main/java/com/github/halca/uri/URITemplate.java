@@ -14,14 +14,6 @@ public class URITemplate {
         this.value = string;
     }
 
-    public boolean matches(String uri) {
-        return matches(URI.create(uri));
-    }
-
-    public boolean matches(URI uri) {
-        return false;
-    }
-
     public URITemplate expand(String name, Object value) {
         return expand(Collections.singletonMap(name, value));
     }

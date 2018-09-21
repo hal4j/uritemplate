@@ -2,11 +2,10 @@ package com.github.halca.uri;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
-import static com.github.halca.uri.URITemplateVariable.parse;
-import static com.github.halca.uri.URITemplateVariable.pathVariable;
-import static com.github.halca.uri.URITemplateVariable.template;
+import static com.github.halca.uri.URITemplateVariable.*;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -14,7 +13,7 @@ public class URITemplateVariablesTest {
 
     private void assertContainsAll(String uri, URITemplateVariable... vars) {
         List<URITemplateVariable> parsed = new URITemplate(uri).variables();
-        List<URITemplateVariable> expected = List.of(vars);
+        List<URITemplateVariable> expected = Arrays.asList(vars);
         assertEquals(expected.size(), parsed.size());
         assertAll("All variables match", () -> {
             for (int i = 0; i < parsed.size(); i++) {

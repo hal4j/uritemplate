@@ -2,10 +2,12 @@ package com.github.halca.uri;
 
 import org.junit.jupiter.api.Test;
 
+import static com.github.halca.uri.AdvancedAssertions.assertForEach;
 import static com.github.halca.uri.URITemplateModifier.valueOf;
 import static com.github.halca.uri.URITemplateVariable.template;
 import static com.github.halca.uri.URIVarComponent.prefix;
 import static com.github.halca.uri.URIVarComponent.var;
+import static java.util.Arrays.stream;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class URITemplateVariableTest {
@@ -25,13 +27,11 @@ public class URITemplateVariableTest {
 
     @Test
     public void shouldRejectVarNameStartingWithModifierCharacter() {
-        assertAll(() -> {
-            for (URITemplateModifier modifier : URITemplateModifier.values()) {
-                assertThrows(URITemplateSyntaxException.class,  () -> {
-                    URITemplateVariable.template(modifier.modifierChar() + SOME_NAME);
-                }, "Should reject name starting with \"" + modifier.modifierChar() + "\"");
-            }
-        });
+        assertForEach(
+                stream(URITemplateModifier.values()).map(URITemplateModifier::modifierChar),
+                character -> assertThrows(URITemplateSyntaxException.class,
+                        () -> URITemplateVariable.template(character + SOME_NAME),
+                        "Should reject name starting with \"" + character + "\""));
     }
 
     @Test
