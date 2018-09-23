@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.github.ivangammel</groupId>
+    <groupId>com.github.hal4j</groupId>
     <version>1.0.0-SNAPSHOT</version>
     <artifactId>uritemplate</artifactId>
     <packaging>jar</packaging>
@@ -27,9 +27,9 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:git@github.com:ivan-gammel/uritemplates.git</connection>
-        <developerConnection>scm:git:git@github.com:ivan-gammel/uritemplates.git</developerConnection>
-        <url>git@github.com:ivan-gammel/uritemplates.git</url>
+        <connection>scm:git:git@github.com:hal4j/uritemplate.git</connection>
+        <developerConnection>scm:git:git@github.com:hal4j/uritemplate.git</developerConnection>
+        <url>git@github.com:hal4j/uritemplate.git</url>
     </scm>
 
     <distributionManagement>
