@@ -1,7 +1,9 @@
 package com.github.hal4j.uritemplate;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.function.Consumer;
 
 import static java.util.Arrays.stream;
@@ -12,15 +14,50 @@ public class URIBuilder {
     private String schemeSpecificPart;
 
     private String path;
+    private String appendedPath;
+
     private String scheme;
+
     private String host;
+    private String appendedHost;
+
     private String userInfo;
     private int port;
+
     private String query;
+    private String appendedQuery;
+
     private String fragment;
+    private String appendedFragment;
+
     private String authority;
 
     private boolean template;
+
+    public static URIBuilder uri(String scheme, String host, int port) {
+        try {
+            return new URIBuilder(new URI(scheme, null, host, port, null, null, null));
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    public static URIBuilder basedOn(Object uriBuilder) {
+        return basedOn(uriBuilder.toString());
+    }
+
+    public static URIBuilder basedOn(String uriString) {
+        return new URIBuilder(URI.create(uriString));
+    }
+
+    public static URIBuilder basedOn(URI uri) {
+        return new URIBuilder(uri);
+    }
+
+
+    URIBuilder(String uriString) {
+        this(URI.create(uriString));
+    }
 
     URIBuilder(URI uri) {
         this.scheme = uri.getScheme();
@@ -38,69 +75,66 @@ public class URIBuilder {
         }
     }
 
-    public static URIBuilder basedOn(String uri) {
-        return new URIBuilder(uri);
-    }
-
-    URIBuilder(String uriString) {
-        this(URI.create(uriString));
-    }
-
     private boolean isOpaque() {
         return this.path == null;
     }
 
-    private Consumer<Object> fragment() {
-        return object -> this.fragment = append(this.fragment, object);
+    public Fragment path() {
+        return new Fragment("/", "/", object -> append(this.appendedPath, object, value -> this.appendedPath = value));
     }
 
-    private Consumer<Object> query() {
-        return object -> this.query = append(this.query, object);
+    public Fragment fragment() {
+        return new Fragment(null, "/", object -> append(this.appendedFragment, object, value -> this.appendedFragment = value));
     }
 
-    private Consumer<Object> path() {
-        return object -> this.path = append(this.path, object);
+    public Fragment host() {
+        return new Fragment(null, ".", object -> append(this.appendedHost, object, value -> this.appendedHost = value));
     }
 
-    private Consumer<Object> host() {
-        return object -> this.host = append(this.host, object);
+    public Fragment query() {
+        return new Fragment(null, "&", object -> append(this.appendedQuery, object, value -> this.appendedQuery = value));
     }
 
-    private Consumer<Object> lastSegment() {
-        if (fragment != null) return fragment();
-        if (query != null) return query();
-        if (path != null) return path();
+    private Fragment lastSegment() {
+        if (appendedFragment != null || fragment != null) return fragment();
+        if (appendedQuery != null || query != null) return query();
+        if (appendedPath != null || (path  != null && !path.isEmpty())) return path();
         return host();
     }
 
-    private String append(String string, Object value) {
-        String appended = String.valueOf(value);
-        if (string == null) {
-            return appended;
+    private void append(String string, Object value, Consumer<String> newValue) {
+        String appendedString;
+        if (value instanceof URIVarComponent) {
+            value = URITemplateVariable.template((URIVarComponent) value);
         }
-        return string + appended;
+        if (value instanceof URITemplateVariable) {
+            appendedString = value.toString();
+        } else {
+            appendedString = String.valueOf(value);
+        }
+        newValue.accept(string == null ? appendedString : string + appendedString);
     }
 
     public URIBuilder append(URITemplateVariable variable) {
         if (!variable.modifier().isPresent()) {
-            lastSegment().accept(variable);
+            lastSegment().join(variable);
         } else {
             switch (variable.modifier().get()) {
                 case DOMAIN:
-                    host().accept(variable);
+                    host().join(variable);
                     break;
                 case PATH:
-                    path().accept(variable);
+                    path().join(variable);
                     break;
                 case QUERY_START:
                 case QUERY:
-                    query().accept(variable);
+                    query().join(variable);
                     break;
                 case FRAGMENT:
-                    fragment().accept(variable);
+                    fragment().join(variable);
                     break;
                 default:
-                    lastSegment().accept(variable);
+                    lastSegment().join(variable);
             }
         }
         this.template = true;
@@ -110,27 +144,23 @@ public class URIBuilder {
 
     public URIBuilder relative(Object... pathSegments) {
         validate(pathSegments);
-        String path = stream(pathSegments)
-                .map(String::valueOf)
-                .collect(joining("/"));
-        this.path = this.path + "/" + path;
+        path().append(pathSegments);
         return this;
     }
 
     public URIBuilder queryParam(String name, Object... values) {
         validate(values);
-
         StringBuilder builder = new StringBuilder();
-        if (query != null) {
-            builder.append(query);
-            if (query.length() > 0) {
+        if (appendedQuery != null) {
+            builder.append(appendedQuery);
+            if (appendedQuery.length() > 0) {
                 builder.append('&');
             }
         }
         builder.append(stream(values).map(String::valueOf)
                 .map(s -> name + '=' + s)
                 .collect(joining("&")));
-        this.query = builder.toString();
+        this.appendedQuery = builder.toString();
         return this;
     }
 
@@ -147,6 +177,10 @@ public class URIBuilder {
         if (template) {
             throw new IllegalStateException("This URI is template: " + toDecodedString());
         }
+        String host = merge(false, this.host, this.appendedHost, "");
+        String path = merge(false, this.path, this.appendedPath, "");
+        String query = merge(false, this.query, this.appendedQuery, "&");
+        String fragment = merge(false, this.fragment, this.appendedFragment, "");
         try {
             if (isOpaque()) {
                 return new URI(scheme, schemeSpecificPart, fragment);
@@ -156,6 +190,31 @@ public class URIBuilder {
         } catch (URISyntaxException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    private String merge(boolean encode, String uriPart, String appendedPart, String delimiter) {
+        if (uriPart == null || uriPart.isEmpty()) return appendedPart;
+        String prefix = encode ? encodePartIgnoreDelimiters(uriPart) : uriPart;
+        if (appendedPart == null) return prefix;
+        return prefix + delimiter + appendedPart;
+    }
+
+    private String encodePartIgnoreDelimiters(String uriPart) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < uriPart.length(); i++) {
+            char c = uriPart.charAt(i);
+            if (c == '&' || c == '=' || c == '/') {
+                result.append(c);
+            } else {
+                try {
+                    result.append(URLEncoder.encode(String.valueOf(c), "utf-8"));
+                } catch (UnsupportedEncodingException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+
+        }
+        return result.toString();
     }
 
     public URITemplate asTemplate() {
@@ -168,6 +227,10 @@ public class URIBuilder {
     }
 
     private String toDecodedString() {
+        String host = merge(true, this.host, this.appendedHost, "");
+        String path = merge(true, this.path, this.appendedPath, "");
+        String query = merge(true, this.query, this.appendedQuery, "&");
+        String fragment = merge(true, this.fragment, this.appendedFragment, "");
         StringBuilder sb = new StringBuilder();
         if (scheme != null) {
             sb.append(scheme);
@@ -217,4 +280,38 @@ public class URIBuilder {
     public URITemplate resolve(String relativeUri) {
         return new URITemplate(this.toDecodedString() + relativeUri);
     }
+
+    public class Fragment {
+        private final String prefix;
+        private final String delimiter;
+        private final Consumer<Object> consumer;
+
+        public Fragment(String prefix, String delimiter, Consumer<Object> consumer) {
+            this.prefix = prefix;
+            this.delimiter = delimiter;
+            this.consumer = consumer;
+        }
+
+        public URIBuilder join(Object... values) {
+            for (Object value : values) {
+                consumer.accept(value);
+            }
+            return URIBuilder.this;
+        }
+
+        public URIBuilder append(Object... values) {
+            String currentDelimiter = prefix;
+            for (Object value : values) {
+                if (currentDelimiter != null) {
+                    consumer.accept(currentDelimiter);
+                }
+                consumer.accept(value);
+                currentDelimiter = delimiter;
+
+            }
+            return URIBuilder.this;
+        }
+    }
+
+
 }

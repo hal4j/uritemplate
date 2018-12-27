@@ -1,7 +1,9 @@
 package com.github.hal4j.uritemplate;
 
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.junit.jupiter.api.Test;
 
+import static com.github.hal4j.uritemplate.URITemplateVariable.template;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class URIBuilderTest {
@@ -20,6 +22,20 @@ public class URIBuilderTest {
                 .queryParam("value", "%")
                 .toString();
         assertEquals("http://www.example.com?value=%25", s);
+    }
+
+    @Test
+    public void shouldBuildSameURIAsOriginalWithEncodedQueryParamValue() {
+        String s = new URIBuilder("http://www.example.com?val1=%25").toString();
+        assertEquals("http://www.example.com?val1=%25", s);
+    }
+
+    @Test
+    public void shouldBuildSameURITemplateAsOriginalWithEncodedQueryParamValue() {
+        String s = new URIBuilder("http://www.example.com?val1=%25")
+                .asTemplate()
+                .toString();
+        assertEquals("http://www.example.com?val1=%25", s);
     }
 
     @Test
@@ -48,6 +64,31 @@ public class URIBuilderTest {
     }
 
     @Test
+    public void shouldApplyPartSpecificAppendCorrectly() {
+        String s = new URIBuilder("http://www.example.com?val1=%25")
+                .path().append("api", "subpath")
+                .toString();
+        assertEquals("http://www.example.com/api/subpath?val1=%25", s);
+    }
+
+    @Test
+    public void shouldApplyPartSpecificJoinCorrectly() {
+        String s = new URIBuilder("http://www.example.com?val1=%25")
+                .path().join("/api", "subpath")
+                .toString();
+        assertEquals("http://www.example.com/apisubpath?val1=%25", s);
+    }
+
+    @Test
+    public void shouldApplyPartSpecificJoinCorrectlyInTemplate() {
+        String s = new URIBuilder("http://www.example.com?key=value")
+                .path().join("/api", "subpath")
+                .asTemplate()
+                .toString();
+        assertEquals("http://www.example.com/apisubpath?key=value", s);
+    }
+
+    @Test
     public void shouldEscapeTemplateLikePathCorrectly() {
         String s = new URIBuilder("http://www.example.com")
                 .relative("api", "items", "{name}")
@@ -58,7 +99,7 @@ public class URIBuilderTest {
     @Test
     public void shouldAppendPathTemplateCorrectly() {
         String s = new URIBuilder("http://www.example.com")
-                .relative("api", "items", URITemplateVariable.template("name"))
+                .relative("api", "items", template("name"))
                 .toString();
         assertEquals("http://www.example.com/api/items/{name}", s);
     }
@@ -66,7 +107,7 @@ public class URIBuilderTest {
     @Test
     public void shouldAppendPathTemplateWithMultipleSegmentsCorrectly() {
         String s = new URIBuilder("http://www.example.com")
-                .relative("api", "items", URITemplateVariable.template("name"), URITemplateVariable.template("value"))
+                .relative("api", "items", template("name"), template("value"))
                 .toString();
         assertEquals("http://www.example.com/api/items/{name}/{value}", s);
     }
@@ -82,7 +123,7 @@ public class URIBuilderTest {
     @Test
     public void shouldAppendVariableToPathCorrectly() {
         String s = new URIBuilder("http://www.example.com/api/")
-                .append(URITemplateVariable.template("name"))
+                .append(template("name"))
                 .toString();
         assertEquals("http://www.example.com/api/{name}", s);
     }
@@ -106,7 +147,7 @@ public class URIBuilderTest {
     @Test
     public void shouldExpandPathTemplateCorrectly() {
         String s = new URIBuilder("http://www.example.com")
-                .relative("api", "items", URITemplateVariable.template("name"))
+                .relative("api", "items", template("name"))
                 .asTemplate()
                 .expand("name", "1")
                 .toString();
