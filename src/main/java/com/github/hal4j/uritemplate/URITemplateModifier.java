@@ -21,7 +21,7 @@ public enum URITemplateModifier {
         this.modifierChar = c;
     }
 
-    char modifierChar() {
+    public char modifierChar() {
         return modifierChar;
     }
 

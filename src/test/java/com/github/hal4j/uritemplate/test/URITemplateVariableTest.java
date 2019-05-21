@@ -1,23 +1,28 @@
-package com.github.hal4j.uritemplate;
+package com.github.hal4j.uritemplate.test;
 
+import com.github.hal4j.uritemplate.URITemplateModifier;
+import com.github.hal4j.uritemplate.URITemplateSyntaxException;
+import com.github.hal4j.uritemplate.URITemplateVariable;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
 
 import static com.github.hal4j.uritemplate.URITemplateModifier.valueOf;
 import static com.github.hal4j.uritemplate.URITemplateVariable.template;
 import static com.github.hal4j.uritemplate.URIVarComponent.prefix;
 import static com.github.hal4j.uritemplate.URIVarComponent.var;
-import static java.util.Arrays.stream;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class URITemplateVariableTest {
+class URITemplateVariableTest {
 
-    public static final String SOME_NAME = "name";
-    public static final char SOME_VALID_MODIFIER = '/';
+    private static final String SOME_NAME = "name";
+    private static final char SOME_VALID_MODIFIER = '/';
     private static final String PREFIXED_NAME = "test";
     private static final int SOME_PREFIX = 3;
 
     @Test
-    public void shouldCorrectlyParseSimpleName() {
+    void shouldCorrectlyParseSimpleName() {
         URITemplateVariable var = URITemplateVariable.parse(SOME_NAME);
         assertFalse(var.modifier().isPresent());
         assertEquals(1, var.components().size());
@@ -25,16 +30,16 @@ public class URITemplateVariableTest {
     }
 
     @Test
-    public void shouldRejectVarNameStartingWithModifierCharacter() {
+    void shouldRejectVarNameStartingWithModifierCharacter() {
         AdvancedAssertions.assertForEach(
-                stream(URITemplateModifier.values()).map(URITemplateModifier::modifierChar),
-                character -> assertThrows(URITemplateSyntaxException.class,
+                Arrays.stream(URITemplateModifier.values()).map(URITemplateModifier::modifierChar),
+                character -> Assertions.assertThrows(URITemplateSyntaxException.class,
                         () -> URITemplateVariable.template(character + SOME_NAME),
                         "Should reject name starting with \"" + character + "\""));
     }
 
     @Test
-    public void shouldCorrectlyParseNameWithValidModifier() {
+    void shouldCorrectlyParseNameWithValidModifier() {
         URITemplateVariable var = URITemplateVariable.parse(SOME_VALID_MODIFIER + SOME_NAME);
         assertTrue(var.modifier().isPresent());
         assertEquals(SOME_VALID_MODIFIER, var.modifier().get().modifierChar());
@@ -43,7 +48,7 @@ public class URITemplateVariableTest {
     }
 
     @Test
-    public void shouldCorrectlyBuildComplexExample() {
+    void shouldCorrectlyBuildComplexExample() {
         URITemplateModifier mod = valueOf(SOME_VALID_MODIFIER).orElse(null);
         URITemplateVariable var = template(mod, var(SOME_NAME), prefix(PREFIXED_NAME, SOME_PREFIX));
         assertEquals(mod, var.modifier().orElse(null));
@@ -54,7 +59,7 @@ public class URITemplateVariableTest {
     }
 
     @Test
-    public void shouldCorrectlySerializeComplexExample() {
+    void shouldCorrectlySerializeComplexExample() {
         URITemplateModifier mod = valueOf(SOME_VALID_MODIFIER).orElse(null);
         URITemplateVariable var = template(mod, var(SOME_NAME), prefix(PREFIXED_NAME, SOME_PREFIX));
         String s = var.toString();
@@ -62,7 +67,7 @@ public class URITemplateVariableTest {
     }
 
     @Test
-    public void shouldCorrectlyParseComplexExample() {
+    void shouldCorrectlyParseComplexExample() {
         String s = SOME_VALID_MODIFIER + SOME_NAME + ',' + PREFIXED_NAME + ':' + SOME_PREFIX;
         URITemplateVariable parsed = URITemplateVariable.parse(s);
         assertEquals(valueOf(SOME_VALID_MODIFIER).orElse(null), parsed.modifier().orElse(null));
@@ -73,14 +78,14 @@ public class URITemplateVariableTest {
     }
 
     @Test
-    public void shouldCorrectlyWriteSimpleNameToString() {
+    void shouldCorrectlyWriteSimpleNameToString() {
         String name = SOME_NAME;
         URITemplateVariable var = URITemplateVariable.parse(name);
         assertEquals(wrap(name), var.toString());
     }
 
     @Test
-    public void shouldCorrectlyWriteNameWithValidModifierToString() {
+    void shouldCorrectlyWriteNameWithValidModifierToString() {
         String name = SOME_VALID_MODIFIER + SOME_NAME;
         URITemplateVariable var = URITemplateVariable.parse(name);
         assertEquals(wrap(name), var.toString());

@@ -104,14 +104,14 @@ public class URITemplateParser {
         char c = tpl.charAt(0);
         boolean operator = URITemplateFormat.MODIFIERS.indexOf(c) >= 0;
         char last = tpl.charAt(tpl.length() - 1);
-        boolean explode = last == '*';
+        boolean explode = last == URITemplateFormat.EXPLODE_FLAG;
         String names = tpl.substring(operator ? 1 : 0, tpl.length() - (explode ? 1 : 0));
-        if (names.charAt(names.length() - 1) == ',') {
+        if (names.charAt(names.length() - 1) == URITemplateFormat.DEFAULT_DELIMITER) {
             throw new URITemplateSyntaxException(value);
         }
-        String[] vars = names.split(",");
-        for (int i = 0; i < vars.length; i++) {
-            if (vars[i].isEmpty()) throw new URITemplateSyntaxException(value);
+        String[] vars = names.split(String.valueOf(URITemplateFormat.DEFAULT_DELIMITER));
+        for (String var : vars) {
+            if (var.isEmpty()) throw new URITemplateSyntaxException(value);
         }
         return URITemplateFormat.format(operator ? c : null, explode)
                 .render(asList(vars), substitutions);

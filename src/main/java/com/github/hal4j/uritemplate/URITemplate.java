@@ -10,7 +10,7 @@ public class URITemplate {
 
     private final String value;
 
-    URITemplate(String string) {
+    public URITemplate(String string) {
         this.value = string;
     }
 

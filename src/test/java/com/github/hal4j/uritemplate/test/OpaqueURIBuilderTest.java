@@ -1,15 +1,16 @@
-package com.github.hal4j.uritemplate;
+package com.github.hal4j.uritemplate.test;
 
+import com.github.hal4j.uritemplate.URIFactory;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class OpaqueURIBuilderTest {
+class OpaqueURIBuilderTest {
 
     @Test
-    public void shouldCreateSimpleOpaqueURIWithoutFragment() {
+    void shouldCreateSimpleOpaqueURIWithoutFragment() {
         URI uri = URIFactory.opaque("rel").ssp("test").toURI();
         assertTrue(uri.isOpaque());
         assertEquals("rel", uri.getScheme());
@@ -18,8 +19,11 @@ public class OpaqueURIBuilderTest {
     }
 
     @Test
-    public void shouldCreateSimpleOpaqueURIWithFragment() {
-        URI uri = URIFactory.opaque("rel").ssp("test").fragment("!/frag").toURI();
+    void shouldCreateSimpleOpaqueURIWithFragment() {
+        URI uri = URIFactory.opaque("rel")
+                .ssp("test")
+                .fragment("!/frag")
+                .toURI();
         assertTrue(uri.isOpaque());
         assertEquals("rel", uri.getScheme());
         assertEquals("test", uri.getSchemeSpecificPart());
@@ -28,8 +32,10 @@ public class OpaqueURIBuilderTest {
     }
 
     @Test
-    public void shouldConcatenateSSP() {
-        URI uri = URIFactory.opaque("rel").ssp(":1", ":2", ":3").toURI();
+    void shouldConcatenateSSP() {
+        URI uri = URIFactory.opaque("rel")
+                .ssp().append(":1", ":2", ":3")
+                .toURI();
         assertTrue(uri.isOpaque());
         assertEquals("rel", uri.getScheme());
         assertEquals(":1:2:3", uri.getSchemeSpecificPart());
@@ -38,8 +44,10 @@ public class OpaqueURIBuilderTest {
     }
 
     @Test
-    public void shouldConcatenateSSPWithDelimiter() {
-        URI uri = URIFactory.opaque("rel").sspJoined(":","1", "2", "3").toURI();
+    void shouldConcatenateSSPWithDelimiter() {
+        URI uri = URIFactory.opaque("rel")
+                .ssp().delimiter(":").join("1", "2", "3")
+                .toURI();
         assertTrue(uri.isOpaque());
         assertEquals("rel", uri.getScheme());
         assertEquals("1:2:3", uri.getSchemeSpecificPart());
@@ -48,10 +56,22 @@ public class OpaqueURIBuilderTest {
     }
 
     @Test
-    public void shouldConcatenateFragmentWithDelimiter() {
+    void shouldConcatenateSSPWithPrefix() {
+        URI uri = URIFactory.opaque("rel")
+                .ssp().prefix(":").delimiter("-").join("1", "2", "3")
+                .toURI();
+        assertTrue(uri.isOpaque());
+        assertEquals("rel", uri.getScheme());
+        assertEquals(":1-2-3", uri.getSchemeSpecificPart());
+        assertNull(uri.getFragment());
+        assertEquals("rel::1-2-3", uri.toString());
+    }
+
+    @Test
+    void shouldConcatenateFragmentWithDelimiter() {
         URI uri = URIFactory.opaque("rel")
                 .ssp("test")
-                .fragmentJoined("/","1", "2", "3")
+                .fragment().delimiter("/").join("1", "2", "3")
                 .toURI();
         assertTrue(uri.isOpaque());
         assertEquals("rel", uri.getScheme());

@@ -1,5 +1,7 @@
-package com.github.hal4j.uritemplate;
+package com.github.hal4j.uritemplate.test;
 
+import com.github.hal4j.uritemplate.URITemplate;
+import com.github.hal4j.uritemplate.URITemplateVariable;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -8,7 +10,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class URITemplateVariablesTest {
+class URITemplateVariablesTest {
 
     private void assertContainsAll(String uri, URITemplateVariable... vars) {
         List<URITemplateVariable> parsed = new URITemplate(uri).variables();
@@ -23,19 +25,19 @@ public class URITemplateVariablesTest {
     }
 
     @Test
-    public void shouldReturnSimpleVariableFromPath() {
+    void shouldReturnSimpleVariableFromPath() {
         assertContainsAll("https://www.example.com:8080/a/b/{any}/c?query=hello#fragment",
                 URITemplateVariable.template("any"));
     }
 
     @Test
-    public void shouldReturnPathVariableFromPath() {
+    void shouldReturnPathVariableFromPath() {
         assertContainsAll("https://www.example.com:8080/a/b{/any}/c?query=hello#fragment",
                 URITemplateVariable.pathVariable("any"));
     }
 
     @Test
-    public void shouldReturnMultipleTemplateVars() {
+    void shouldReturnMultipleTemplateVars() {
         assertContainsAll("https://www.{.domain}:8080/a/b/{;any*}{/id}{?query,kind:5}",
                 URITemplateVariable.parse(".domain"),
                 URITemplateVariable.parse(";any*"),

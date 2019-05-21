@@ -19,21 +19,21 @@ public class URIVarComponent {
      * pct-encoded  =  "%" HEXDIG HEXDIG
      * </pre>
      */
-    public static final String PCT_ENCODED = "%([0-9a-f]){2}";
+    private static final String PCT_ENCODED = "%([0-9a-f]){2}";
     /**
      * varchar specification according to RFC 6570 section 2.3:
      * <pre>
      * varchar  =  ALPHA / DIGIT / "_" / pct-encoded
      * </pre>
      */
-    public static final String VARCHAR = "\\w|(" + PCT_ENCODED + ")";
+    private static final String VARCHAR = "\\w|(" + PCT_ENCODED + ")";
     /**
      * varname specification according to RFC 6570 section 2.3:
      * <pre>
      * varname  =  varchar *( ["."] varchar )
      * </pre>
      */
-    public static final String VARNAME = "(?i)(" + VARCHAR + ")+(\\.(" + VARCHAR + ")+)*";
+    private static final String VARNAME = "(?i)(" + VARCHAR + ")+(\\.(" + VARCHAR + ")+)*";
 
     private final String name;
 

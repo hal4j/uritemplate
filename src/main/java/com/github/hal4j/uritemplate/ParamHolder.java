@@ -10,7 +10,7 @@ public interface ParamHolder {
 
     class ParamMap implements ParamHolder {
         private final Map<String, ?> params;
-        public ParamMap(Map<String, ?> params) {
+        ParamMap(Map<String, ?> params) {
             this.params = params;
         }
         @Override
@@ -26,7 +26,7 @@ public interface ParamHolder {
 
     class ParamArray implements ParamHolder {
 
-        public ParamArray(Object[] array) {
+        ParamArray(Object[] array) {
             this.array = array;
         }
 

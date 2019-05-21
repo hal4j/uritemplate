@@ -7,7 +7,6 @@ import java.util.function.Function;
 import java.util.stream.StreamSupport;
 
 import static java.lang.String.valueOf;
-import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
@@ -78,7 +77,7 @@ public class URITemplateFormat {
         return new URITemplateFormat(renderPrefix, explode, named, reorder, encoded, prefix, itemSeparator);
     }
 
-    public URITemplateFormat(boolean renderPrefix,
+    URITemplateFormat(boolean renderPrefix,
                              boolean explode,
                              boolean named,
                              boolean reorder,
@@ -94,7 +93,7 @@ public class URITemplateFormat {
         this.itemSeparator = itemSeparator;
     }
 
-    public String render(List<String> names, ParamHolder parameters) {
+    String render(List<String> names, ParamHolder parameters) {
         List<String> remaining = new LinkedList<>(names);
         StringBuilder builder = new StringBuilder();
         List<String> missing = new ArrayList<>();
@@ -207,15 +206,4 @@ public class URITemplateFormat {
         return builder.toString();
     }
 
-    public String renderTemplate(String... names) {
-        StringBuilder builder = new StringBuilder();
-        appendTemplate(builder, false, asList(names));
-        return builder.toString();
-    }
-
-    public List<URITemplateVariable> parse(List<String> strings) {
-        return strings.stream()
-                .map(URITemplateVariable::parse)
-                .collect(toList());
-    }
 }

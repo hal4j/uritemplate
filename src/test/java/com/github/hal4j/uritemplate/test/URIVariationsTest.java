@@ -1,49 +1,49 @@
-package com.github.hal4j.uritemplate;
+package com.github.hal4j.uritemplate.test;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static com.github.hal4j.uritemplate.URIBuilder.basedOn;
 
-public class URIVariationsTest {
+class URIVariationsTest {
 
     @Test
-    public void shouldHandleCustomRelCorrectly() {
+    void shouldHandleCustomRelCorrectly() {
         assertOriginalAndParsedSame("exa-mple:link/action");
     }
 
     @Test
-    public void shouldHandleSelfRelCorrectly() {
+    void shouldHandleSelfRelCorrectly() {
         assertOriginalAndParsedSame("self");
     }
 
     @Test
-    public void shouldAcceptValidServerBasedAuthority() {
+    void shouldAcceptValidServerBasedAuthority() {
         assertOriginalAndParsedSame("http://www.ietf.org/rfc/rfc2396.txt");
     }
 
     @Test
-    public void shouldAcceptValidURN() {
+    void shouldAcceptValidURN() {
         assertOriginalAndParsedSame("urn:oasis:names:specification:docbook:dtd:xml:4.1.2");
     }
 
     @Test
-    public void shouldAcceptValidPhone() {
+    void shouldAcceptValidPhone() {
         assertOriginalAndParsedSame("tel:+1-816-555-1212");
     }
 
     @Test
-    public void shouldAcceptValidMailto() {
+    void shouldAcceptValidMailto() {
         assertOriginalAndParsedSame("mailto:john.doe+spam@example.com");
     }
 
     @Test
-    public void shouldAcceptValidLDAP() {
+    void shouldAcceptValidLDAP() {
         assertOriginalAndParsedSame("ldap://[2001:db8::7]/c=GB?objectClass?one");
     }
 
-
     private void assertOriginalAndParsedSame(String uri) {
-        assertEquals(uri, new URIBuilder(uri).toString());
+        Assertions.assertEquals(uri, basedOn(uri).toString());
     }
 
 }

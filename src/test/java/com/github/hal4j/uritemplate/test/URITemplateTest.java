@@ -1,14 +1,15 @@
-package com.github.hal4j.uritemplate;
+package com.github.hal4j.uritemplate.test;
 
+import com.github.hal4j.uritemplate.URITemplate;
 import org.junit.jupiter.api.Test;
 
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class URITemplateTest {
+class URITemplateTest {
 
     @Test
-    public void shouldExpandPreEncodedValueCorrectly() {
+    void shouldExpandPreEncodedValueCorrectly() {
         String s = new URITemplate("http://www.example{+tld}")
                 .expand("tld", "{.domain}")
                 .toString();
@@ -16,13 +17,13 @@ public class URITemplateTest {
     }
 
     @Test
-    public void shouldParsePathTemplateWithMultipleSegmentsCorrectly() {
+    void shouldParsePathTemplateWithMultipleSegmentsCorrectly() {
         String s = new URITemplate("http://www.example.com/{name}/{value}").toString();
         assertEquals("http://www.example.com/{name}/{value}", s);
     }
 
     @Test
-    public void shouldExpandUriTemplatePathCorrectly() {
+    void shouldExpandUriTemplatePathCorrectly() {
         String s = new URITemplate("http://www.example.com{/path*}")
                 .expand("path", asList("1","2"))
                 .toString();
@@ -30,7 +31,7 @@ public class URITemplateTest {
     }
 
     @Test
-    public void shouldExpandUriTemplateQueryCorrectly() {
+    void shouldExpandUriTemplateQueryCorrectly() {
         String s = new URITemplate("http://www.example.com/api{?param*}")
                 .expand("param", asList("1","2"))
                 .toString();
@@ -38,7 +39,7 @@ public class URITemplateTest {
     }
 
     @Test
-    public void shouldExpandOpaqueURICorrectly() {
+    void shouldExpandOpaqueURICorrectly() {
         String s = new URITemplate("rel{:param*}")
                 .expand("param", asList("1","2"))
                 .toString();

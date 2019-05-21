@@ -1,16 +1,17 @@
-package com.github.hal4j.uritemplate;
+package com.github.hal4j.uritemplate.test;
 
+import com.github.hal4j.uritemplate.URIVarComponent;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class URIVarComponentTest {
+class URIVarComponentTest {
 
-    public static final String SOME_NAME = "test";
-    public static final int SOME_LENGTH = 3;
+    private static final String SOME_NAME = "test";
+    private static final int SOME_LENGTH = 3;
 
     @Test
-    public void shouldCorrectlyParseSimpleComponent() {
+    void shouldCorrectlyParseSimpleComponent() {
         URIVarComponent component = URIVarComponent.parse(SOME_NAME);
         assertNotNull(component);
         assertEquals(SOME_NAME, component.name());
@@ -19,7 +20,7 @@ public class URIVarComponentTest {
     }
 
     @Test
-    public void shouldCorrectlyParseComponentWithLengthPrefix() {
+    void shouldCorrectlyParseComponentWithLengthPrefix() {
         URIVarComponent component = URIVarComponent.parse(SOME_NAME + URIVarComponent.PREFIX_SEPARATOR + SOME_LENGTH);
         assertNotNull(component);
         assertEquals(SOME_NAME, component.name());
@@ -29,7 +30,7 @@ public class URIVarComponentTest {
     }
 
     @Test
-    public void shouldCorrectlyParseExplodeComponent() {
+    void shouldCorrectlyParseExplodeComponent() {
         URIVarComponent component = URIVarComponent.parse(SOME_NAME + URIVarComponent.EXPLODE_MODIFIER);
         assertNotNull(component);
         assertEquals(SOME_NAME, component.name());
