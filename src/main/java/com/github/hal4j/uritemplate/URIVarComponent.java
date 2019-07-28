@@ -9,6 +9,8 @@ public class URIVarComponent {
 
     public static final char PREFIX_SEPARATOR = ':';
     public static final char EXPLODE_MODIFIER = '*';
+    public static final char NAME_SEPARATOR = '.';
+
     // Variable name regular expressions:
     /**
      * pct-encoded character as defined in RFC 6570 section 1.5:
@@ -33,7 +35,8 @@ public class URIVarComponent {
      * varname  =  varchar *( ["."] varchar )
      * </pre>
      */
-    private static final String VARNAME = "(?i)(" + VARCHAR + ")+(\\.(" + VARCHAR + ")+)*";
+    private static final String VARNAME = "(?i)(" + VARCHAR + ")+(\\"
+            + NAME_SEPARATOR + "(" + VARCHAR + ")+)*";
 
     private final String name;
 

@@ -8,6 +8,26 @@ public interface ParamHolder {
 
     Object get(String name);
 
+    static ParamHolder prefixed(String key, Map<String, String> params) {
+        return new ParamHolder() {
+            String prefix = key + URIVarComponent.NAME_SEPARATOR;
+            int length = prefix.length();
+            @Override
+            public boolean containsKey(String name) {
+                return name.startsWith(prefix) && params.containsKey(key(name));
+            }
+
+            @Override
+            public Object get(String name) {
+                return params.get(key(name));
+            }
+
+            private String key(String name) {
+                return name.substring(length);
+            }
+        };
+    }
+
     class ParamMap implements ParamHolder {
         private final Map<String, ?> params;
         ParamMap(Map<String, ?> params) {

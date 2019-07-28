@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.joining;
@@ -101,7 +102,7 @@ public class URIBuilder {
         this(URI.create(uriString));
     }
 
-    private URIBuilder(URI uri) {
+    URIBuilder(URI uri) {
         this.scheme = uri.getScheme();
         this.fragment = uri.getFragment();
         if (uri.isOpaque()) {
@@ -250,6 +251,16 @@ public class URIBuilder {
         return this;
     }
 
+
+    /**
+     * Sets the new value of the port to default for the specified scheme
+     * @return this
+     */
+    public URIBuilder defaultPort() {
+        this.port = -1;
+        return this;
+    }
+
     /**
      * Provides DSL for constructing path
      * @return builder for URI path
@@ -259,7 +270,9 @@ public class URIBuilder {
         if (isOpaque()) {
             throw new IllegalStateException("Constructed URI is opaque: cannot set path");
         }
-        return new Fragment("/", "/", object -> append(this.appendedPath, object, value -> this.appendedPath = value));
+        return new Fragment(() -> this.path, value -> this.path = value,
+                "/", "/",
+                object -> append(this.appendedPath, object, value -> this.appendedPath = value));
     }
 
     /**
@@ -530,14 +543,25 @@ public class URIBuilder {
      * DSL for constructing components of the URI
      */
     public class Fragment {
+        private final Supplier<String> originalValue;
+        private final Consumer<String> updatedValue;
         private String prefix;
         private String delimiter;
         private final Consumer<Object> consumer;
 
-        Fragment(String prefix, String delimiter, Consumer<Object> consumer) {
+
+        Fragment(Supplier<String> originalValue,
+                 Consumer<String> updatedValue,
+                 String prefix, String delimiter, Consumer<Object> consumer) {
+            this.originalValue = originalValue;
+            this.updatedValue = updatedValue;
             this.prefix = prefix;
             this.delimiter = delimiter;
             this.consumer = consumer;
+        }
+
+        Fragment(String prefix, String delimiter, Consumer<Object> consumer) {
+            this(null, null, prefix, delimiter, consumer);
         }
 
         /**
@@ -567,7 +591,7 @@ public class URIBuilder {
         }
 
         /**
-         * Append string representations of given values to this fragment
+         * Append string representations of given values to this fragment without delimiter and prefix.
          * @param values values to append
          * @return URIBuilder.this
          */
@@ -596,6 +620,21 @@ public class URIBuilder {
                 currentDelimiter = delimiter;
 
             }
+            return URIBuilder.this;
+        }
+
+        /**
+         * Replace given substring in this fragment with a new value
+         * @param substring the substring to be replaced
+         * @param newValue the new value to be substituted
+         * @return URIBuilder.this
+         */
+        public URIBuilder replace(String substring, String newValue) {
+            if (originalValue == null || this.updatedValue == null) {
+                throw new UnsupportedOperationException("Content of this fragment cannot be replaced");
+            }
+            String result = originalValue.get().replace(substring, newValue);
+            updatedValue.accept(result);
             return URIBuilder.this;
         }
     }

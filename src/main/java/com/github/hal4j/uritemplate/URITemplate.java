@@ -86,6 +86,14 @@ public class URITemplate {
     }
 
     /**
+     * If this template is fully expanded, converts it to URIBuilder (convenience method).
+     * @return new URIBuilder(toURI())
+     */
+    public URIBuilder toBuilder() {
+        return new URIBuilder(toURI());
+    }
+
+    /**
      * Returns the original value of this template
      * @return this template as a string
      */
@@ -107,5 +115,4 @@ public class URITemplate {
         });
         return vars;
     }
-
 }
