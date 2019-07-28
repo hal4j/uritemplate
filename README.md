@@ -1,5 +1,8 @@
 # uritemplate
-This library is a Java implementation of RFC 6570 (URI template) with a number of additional features as shown in examples.
+This library is a Java implementation of RFC 6570 (URI template) with a number of
+additional features as shown in examples. To avoid introducing security issues as
+much as possible, this implementation relies on standard Java implementation
+of URI (java.util.URI class).
 
 Example 1: basics of RFC 6570 support
 ```java
@@ -78,7 +81,7 @@ String result = URITemplateParser.parseAndExpand(uri, map);
 assertEquals(expected, result);
 ```
 
-Example 9: advanced composition of URI components - `append()` method
+Example 9: advanced composition of URI components - `join()` method
 ```java
 String s = new URIBuilder("http://www.example.com?val1=%25")
                 .path().join("api", "subpath")
@@ -87,7 +90,7 @@ assertEquals("http://www.example.com/api/subpath?val1=%25", s);
 ```
 The approach above works with `host()`, `path()`, `query()` and `fragment()` methods.
 
-Example 10: advanced composition of URI components - `join()` method
+Example 10: advanced composition of URI components - `append()` method
 ```java
 String s = new URIBuilder("http://www.example.com?val1=%25")
                 .path().append("/api", "subpath")
