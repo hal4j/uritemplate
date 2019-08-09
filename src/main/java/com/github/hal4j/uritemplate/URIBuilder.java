@@ -143,6 +143,7 @@ public class URIBuilder {
      */
     public URIBuilder scheme(URITemplateVariable variable) {
         this.scheme = variable.toString();
+        this.template = true;
         return this;
     }
 
@@ -212,6 +213,7 @@ public class URIBuilder {
     public URIBuilder host(URITemplateVariable variable) {
         this.host = null;
         this.appendedHost = variable.toString();
+        this.template = true;
         return this;
     }
 
@@ -235,6 +237,7 @@ public class URIBuilder {
      */
     public URIBuilder port(URITemplateVariable variable) {
         this.portTemplate = variable.toString();
+        this.template = true;
         return this;
     }
 
@@ -407,6 +410,10 @@ public class URIBuilder {
         }
     }
 
+    public boolean isTemplate() {
+        return template;
+    }
+
     /**
      * Build new URI
      * @return new URI constructed from the components specified in this builder
@@ -500,11 +507,11 @@ public class URIBuilder {
                 if (needBrackets) sb.append('[');
                 sb.append(host);
                 if (needBrackets) sb.append(']');
-                if (port != -1) {
+                if (portTemplate != null) {
+                    sb.append(':').append(portTemplate);
+                } else if (port != -1) {
                     sb.append(':');
                     sb.append(port);
-                } else if (portTemplate != null) {
-                    sb.append(':').append(portTemplate);
                 }
             } else if (authority != null) {
                 sb.append("//");

@@ -1,5 +1,6 @@
 package com.github.hal4j.uritemplate.test;
 
+import com.github.hal4j.uritemplate.URIBuilder;
 import com.github.hal4j.uritemplate.URITemplate;
 import com.github.hal4j.uritemplate.URITemplateVariable;
 import org.junit.jupiter.api.Test;
@@ -8,6 +9,7 @@ import static com.github.hal4j.uritemplate.URIBuilder.basedOn;
 import static com.github.hal4j.uritemplate.URIFactory.hierarchical;
 import static com.github.hal4j.uritemplate.URITemplateVariable.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class URIBuilderTest {
 
@@ -252,6 +254,27 @@ class URIBuilderTest {
                 .expand("expand", "all")
                 .toString();
         assertEquals("http://www.example.com/users/1?expand=all", result);
+    }
+
+    @Test
+    void shouldCorrectlyIdentifyTemplateWhenHostIsVariable() {
+        URIBuilder builder = basedOn("https://www.example.com:8443/path").host(template("service"));
+        assertTrue(builder.isTemplate());
+        assertEquals("https://{service}:8443/path", builder.toString());
+    }
+
+    @Test
+    void shouldCorrectlyIdentifyTemplateWhenPortIsVariable() {
+        URIBuilder builder = basedOn("https://www.example.com:8443/path").port(template("port"));
+        assertTrue(builder.isTemplate());
+        assertEquals("https://www.example.com:{port}/path", builder.toString());
+    }
+
+    @Test
+    void shouldCorrectlyIdentifyTemplateWhenSchemeIsVariable() {
+        URIBuilder builder = basedOn("https://www.example.com:8443/path").scheme(template("scheme"));
+        assertTrue(builder.isTemplate());
+        assertEquals("{scheme}://www.example.com:8443/path", builder.toString());
     }
 
     @Test

@@ -70,4 +70,10 @@ class URITemplateTest {
         assertEquals("rel:1:2", s);
     }
 
+    @Test
+    void shouldExpandPrefixWithURI() {
+        String s = new URITemplate("{+prefix}/api/v1{?query}").expand("https://www.example.com:8443").toString();
+        assertEquals("https://www.example.com:8443/api/v1{?query}", s);
+    }
+
 }
