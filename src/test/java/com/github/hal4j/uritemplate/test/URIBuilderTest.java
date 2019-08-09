@@ -14,6 +14,27 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class URIBuilderTest {
 
     @Test
+    void shouldHandleNullSchemeCorrectly() {
+        String uri = "//www.example.com/path";
+        String s = basedOn(uri).toString();
+        assertEquals(uri, s);
+    }
+
+    @Test
+    void shouldSupportServerTemplate() {
+        String uri = "http://www.example.com:8888/path";
+        String s = basedOn(uri).server(template("service")).scheme("http").port(8888).toString();
+        assertEquals("http://{service}:8888/path", s);
+    }
+
+    @Test
+    void shouldSupportServerTemplateWithoutScheme() {
+        String uri = "http://www.example.com:8888/path";
+        String s = basedOn(uri).server(template("service")).toString();
+        assertEquals("{service}/path", s);
+    }
+
+    @Test
     void shouldAppendSingleParamCorrectly() {
         String s = basedOn("http://www.example.com")
                     .queryParam("name", "Hello world")

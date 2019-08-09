@@ -15,6 +15,7 @@ import static java.util.stream.Collectors.joining;
  */
 public class URIBuilder {
 
+    public static final int UNSET_PORT = -1;
     private String schemeSpecificPart;
     private String appendedSsp;
 
@@ -39,6 +40,8 @@ public class URIBuilder {
     private String authority;
 
     private boolean template;
+
+    private boolean serverTemplate;
 
     /**
      * Create new URI builder initialized with given scheme, host and port
@@ -124,6 +127,22 @@ public class URIBuilder {
      */
     private boolean isOpaque() {
         return this.schemeSpecificPart != null;
+    }
+
+
+    public URIBuilder server(URITemplateVariable variable) {
+        this.serverTemplate = true;
+        this.host = null;
+        this.port = UNSET_PORT;
+        this.scheme = null;
+        this.appendedHost = variable.toString();
+        this.template = true;
+        return this;
+    }
+
+    public URIBuilder clearScheme() {
+        this.scheme = null;
+        return this;
     }
 
     /**
@@ -260,7 +279,7 @@ public class URIBuilder {
      * @return this
      */
     public URIBuilder defaultPort() {
-        this.port = -1;
+        this.port = UNSET_PORT;
         return this;
     }
 
@@ -496,7 +515,9 @@ public class URIBuilder {
             sb.append(schemeSpecificPart);
         } else {
             if (host != null) {
-                sb.append("//");
+                if (!serverTemplate || scheme != null) {
+                    sb.append("//");
+                }
                 if (userInfo != null) {
                     sb.append(userInfo);
                     sb.append('@');
