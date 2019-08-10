@@ -99,6 +99,7 @@ assertEquals("http://www.example.com/apisubpath?val1=%25", s);
 ```
 
 Example 10: "server" editing for cloud service discovery scenarios
+```java
 String serviceLink = new URIBuilder("https://myservice-01-01-01-01.somecloud.com:8765/api/v1/endpoint")
                 .server(template("services.myservice"))
                 .asTemplate()
@@ -108,3 +109,4 @@ assertEquals("{services.myservice}/api/v1/endpoint", serviceLink);
 String publicLink = new URITemplate(serviceLink)
                 .expand(singletonMap("services.myservice", "https://api.mydomain.com/myservice"));
 assertEquals("https://api.mydomain.com/myservice/api/v1/endpoint", publicLink);
+```
