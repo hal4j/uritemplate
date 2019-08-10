@@ -81,7 +81,7 @@ String result = URITemplateParser.parseAndExpand(uri, map);
 assertEquals(expected, result);
 ```
 
-Example 9: advanced composition of URI components - `join()` method
+Example 9: advanced composition of URI components with appropriate delimiters - `join()` method
 ```java
 String s = new URIBuilder("http://www.example.com?val1=%25")
                 .path().join("api", "subpath")
@@ -97,3 +97,14 @@ String s = new URIBuilder("http://www.example.com?val1=%25")
                 .toString();
 assertEquals("http://www.example.com/apisubpath?val1=%25", s);
 ```
+
+Example 10: "server" editing for cloud service discovery scenarios
+String serviceLink = new URIBuilder("https://myservice-01-01-01-01.somecloud.com:8765/api/v1/endpoint")
+                .server(template("services.myservice"))
+                .asTemplate()
+                .toString();
+assertEquals("{services.myservice}/api/v1/endpoint", serviceLink);
+
+String publicLink = new URITemplate(serviceLink)
+                .expand(singletonMap("services.myservice", "https://api.mydomain.com/myservice"));
+assertEquals("https://api.mydomain.com/myservice/api/v1/endpoint", publicLink);
