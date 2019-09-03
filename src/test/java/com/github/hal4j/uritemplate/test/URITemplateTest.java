@@ -4,6 +4,7 @@ import com.github.hal4j.uritemplate.ParamHolder;
 import com.github.hal4j.uritemplate.URITemplate;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -74,6 +75,20 @@ class URITemplateTest {
     void shouldExpandPrefixWithURI() {
         String s = new URITemplate("{+prefix}/api/v1{?query}").expand("https://www.example.com:8443").toString();
         assertEquals("https://www.example.com:8443/api/v1{?query}", s);
+    }
+
+    @Test
+    void shouldDiscardParametersCorrectly() {
+        URITemplate template = new URITemplate("https://www.example.com/api{/uuid}{?utm_source}{&utm_campaign}");
+        String result = template.discard("uuid").toString();
+        assertEquals("https://www.example.com/api{?utm_source}{&utm_campaign}", result);
+    }
+
+    @Test
+    void shouldExpandOnlyRequestedParameters() {
+        URITemplate template = new URITemplate("https://www.example.com/api{/uuid}{?utm_source}{&utm_campaign}");
+        String result = template.expandOnly(Collections.singletonMap("uuid", "1")).toString();
+        assertEquals("https://www.example.com/api/1", result);
     }
 
 }

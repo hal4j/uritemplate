@@ -8,6 +8,20 @@ public interface ParamHolder {
 
     Object get(String name);
 
+    static ParamHolder discardMissing(ParamHolder holder) {
+        return new ParamHolder() {
+            @Override
+            public boolean containsKey(String name) {
+                return true;
+            }
+
+            @Override
+            public Object get(String name) {
+                return holder.containsKey(name) ? holder.get(name) : null;
+            }
+        };
+    }
+
     static ParamHolder prefixed(String key, Map<String, String> params) {
         return new ParamHolder() {
             String prefix = key + URIVarComponent.NAME_SEPARATOR;
@@ -62,6 +76,10 @@ public interface ParamHolder {
         public Object get(String name) {
             return array[index++];
         }
+    }
+
+    static ParamMap map(Map<String, ?> params) {
+        return new ParamMap(params);
     }
 
 }
