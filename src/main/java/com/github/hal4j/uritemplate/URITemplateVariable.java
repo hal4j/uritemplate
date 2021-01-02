@@ -18,7 +18,10 @@ public class URITemplateVariable {
     private final List<URIVarComponent> components;
 
     public static URITemplateVariable parse(String template) {
-        if (template.length() < 3) {
+        if ((template.charAt(0) == '{') && (template.charAt(template.length() - 1) == '}')) {
+            template = template.substring(1, template.length() - 1);
+        }
+        if (template.length() < 1) {
             throw new URITemplateSyntaxException("URI template cannot be empty: {}");
         }
         Optional<URITemplateModifier> modifier = URITemplateModifier.valueOf(template.charAt(0));

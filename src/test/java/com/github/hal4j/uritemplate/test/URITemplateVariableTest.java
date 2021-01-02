@@ -22,6 +22,24 @@ class URITemplateVariableTest {
     private static final int SOME_PREFIX = 3;
 
     @Test
+    void shouldCorrectlyParseShortName() {
+        URITemplateVariable var = URITemplateVariable.parse("id");
+        assertFalse(var.modifier().isPresent());
+        assertEquals(1, var.components().size());
+        assertEquals("id", var.components().get(0).name());
+    }
+
+    @Test
+    void shouldCorrectlyParseWrappedName() {
+        URITemplateVariable var = URITemplateVariable.parse("{?id,name*}");
+        assertTrue(var.modifier().isPresent());
+        assertEquals('?', var.modifier().get().modifierChar());
+        assertEquals(2, var.components().size());
+        assertEquals("id", var.components().get(0).name());
+        assertEquals("name", var.components().get(1).name());
+    }
+
+    @Test
     void shouldCorrectlyParseSimpleName() {
         URITemplateVariable var = URITemplateVariable.parse(SOME_NAME);
         assertFalse(var.modifier().isPresent());
