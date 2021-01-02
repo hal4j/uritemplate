@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.hal4j</groupId>
-    <version>1.2.2-SNAPSHOT</version>
+    <version>1.2.2</version>
     <artifactId>uritemplate</artifactId>
     <packaging>jar</packaging>
 
@@ -30,7 +30,7 @@
         <connection>scm:git:git@github.com:hal4j/uritemplate.git</connection>
         <developerConnection>scm:git:git@github.com:hal4j/uritemplate.git</developerConnection>
         <url>git@github.com:hal4j/uritemplate.git</url>
-      <tag>HEAD</tag>
+      <tag>1.2.2</tag>
   </scm>
 
     <distributionManagement>
