@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -129,6 +130,11 @@ public class URIBuilder {
         return this.schemeSpecificPart != null;
     }
 
+    private void assertNotOpaque() {
+        if (isOpaque()) {
+            throw new IllegalStateException("Constructed URI is opaque: only scheme-specific part can be modified");
+        }
+    }
 
     public URIBuilder server(URITemplateVariable variable) {
         this.serverTemplate = true;
@@ -179,13 +185,16 @@ public class URIBuilder {
     /**
      * Provides DSL for constructing scheme-specific part of the URI
      * @return a builder for scheme-specific part of the URI
-     * @see Fragment
+     * @see URIPartBuilder
      */
-    public Fragment ssp() {
+    public URIPartBuilder ssp() {
         if (!isOpaque()) {
             throw new IllegalStateException("Constructed URI is not opaque: cannot modify scheme-specific part as a whole");
         }
-        return new Fragment(null, null, object -> append(this.appendedSsp, object, value -> this.appendedSsp = value));
+        return new URIPartBuilder(() -> this.schemeSpecificPart, (String value) -> this.schemeSpecificPart = value,
+                null, null,
+                object -> append(this.appendedSsp, object, value -> this.appendedSsp = value),
+                () -> this.appendedSsp);
     }
 
     /**
@@ -194,9 +203,7 @@ public class URIBuilder {
      * @return this
      */
     public URIBuilder userInfo(String info) {
-        if (isOpaque()) {
-            throw new IllegalStateException("Constructed URI is opaque: cannot set user info part");
-        }
+        assertNotOpaque();
         this.userInfo = info;
         return this;
     }
@@ -208,9 +215,7 @@ public class URIBuilder {
      * @return this
      */
     public URIBuilder userInfo(String username, String password) {
-        if (isOpaque()) {
-            throw new IllegalStateException("Constructed URI is opaque: cannot set user info part");
-        }
+        assertNotOpaque();
         this.userInfo = username + ":" + password;
         return this;
     }
@@ -220,6 +225,7 @@ public class URIBuilder {
      * @return this
      */
     public URIBuilder host(String newHost) {
+        assertNotOpaque();
         this.host = newHost;
         return this;
     }
@@ -230,6 +236,7 @@ public class URIBuilder {
      * @return this
      */
     public URIBuilder host(URITemplateVariable variable) {
+        assertNotOpaque();
         this.host = null;
         this.appendedHost = variable.toString();
         this.template = true;
@@ -239,13 +246,14 @@ public class URIBuilder {
     /**
      * Provides DSL for URI host name
      * @return a builder for URI host name
-     * @see Fragment
+     * @see URIPartBuilder
      */
-    public Fragment host() {
-        if (isOpaque()) {
-            throw new IllegalStateException("Constructed URI is opaque: cannot set host");
-        }
-        return new Fragment(null, ".", object -> append(this.appendedHost, object, value -> this.appendedHost = value));
+    public URIPartBuilder host() {
+        assertNotOpaque();
+        return new URIPartBuilder(() -> this.host, (String value) -> this.host = value,
+                '.', null,
+                object -> append(this.appendedHost, object, value -> this.appendedHost = value),
+                () -> this.appendedHost);
     }
 
 
@@ -255,6 +263,7 @@ public class URIBuilder {
      * @return this
      */
     public URIBuilder port(URITemplateVariable variable) {
+        assertNotOpaque();
         this.portTemplate = variable.toString();
         this.template = true;
         return this;
@@ -266,9 +275,7 @@ public class URIBuilder {
      * @return this
      */
     public URIBuilder port(int portNumber) {
-        if (isOpaque()) {
-            throw new IllegalStateException("Constructed URI is opaque: cannot set port number");
-        }
+        assertNotOpaque();
         this.port = portNumber;
         return this;
     }
@@ -279,6 +286,7 @@ public class URIBuilder {
      * @return this
      */
     public URIBuilder defaultPort() {
+        assertNotOpaque();
         this.port = UNSET_PORT;
         return this;
     }
@@ -286,15 +294,14 @@ public class URIBuilder {
     /**
      * Provides DSL for constructing path
      * @return builder for URI path
-     * @see Fragment
+     * @see URIPartBuilder
      */
-    public Fragment path() {
-        if (isOpaque()) {
-            throw new IllegalStateException("Constructed URI is opaque: cannot set path");
-        }
-        return new Fragment(() -> this.path, value -> this.path = value,
-                "/", "/",
-                object -> append(this.appendedPath, object, value -> this.appendedPath = value));
+    public URIPartBuilder path() {
+        assertNotOpaque();
+        return new URIPartBuilder(() -> this.path, value -> this.path = value,
+                '/', this.path == null || this.path.isEmpty() ? '/' : null,
+                object -> append(this.appendedPath, object, value -> this.appendedPath = value),
+                () -> this.appendedPath);
     }
 
     /**
@@ -310,26 +317,31 @@ public class URIBuilder {
     /**
      * Provides DSL for constructing fragment
      * @return builder for URI fragment
-     * @see Fragment
+     * @see URIPartBuilder
      */
-    public Fragment fragment() {
-        return new Fragment(null, null, object -> append(this.appendedFragment, object, value -> this.appendedFragment = value));
+    public URIPartBuilder fragment() {
+        return new URIPartBuilder(() -> this.fragment, (String value) -> this.fragment = value,
+                null, null,
+                object -> append(this.appendedFragment, object, value -> this.appendedFragment = value),
+                () -> this.appendedFragment);
     }
+
 
 
     /**
      * Provides DSL for constructing query part of URI
      * @return builder for URI query part
-     * @see Fragment
+     * @see URIPartBuilder
      */
-    public Fragment query() {
-        if (isOpaque()) {
-            throw new IllegalStateException("Constructed URI is opaque: cannot set query");
-        }
-        return new Fragment(null, "&", object -> append(this.appendedQuery, object, value -> this.appendedQuery = value));
+    public URIPartBuilder query() {
+        assertNotOpaque();
+        return new URIPartBuilder(() -> this.query, (String value) -> this.query = value,
+                '&', this.query == null ? null : '&',
+                object -> append(this.appendedQuery, object, value -> this.appendedQuery = value),
+                () -> this.appendedQuery);
     }
 
-    private Fragment lastSegment() {
+    private URIPartBuilder lastSegment() {
         if (isOpaque()) {
             return ssp();
         } else {
@@ -390,11 +402,10 @@ public class URIBuilder {
      * Joins string representations of given objects with path
      * @param pathSegments objects to be appended to path with forward slash character
      * @return this
-     * @see Fragment#join(Object...)
+     * @see URIPartBuilder#join(Object...)
      */
     public URIBuilder relative(Object... pathSegments) {
-        validate(pathSegments);
-        path().join(pathSegments);
+        this.path().join(pathSegments);
         return this;
     }
 
@@ -405,28 +416,8 @@ public class URIBuilder {
      * @return this
      */
     public URIBuilder queryParam(String name, Object... values) {
-        validate(values);
-        StringBuilder builder = new StringBuilder();
-        if (appendedQuery != null) {
-            builder.append(appendedQuery);
-            if (appendedQuery.length() > 0) {
-                builder.append('&');
-            }
-        }
-        builder.append(stream(values).map(String::valueOf)
-                .map(s -> name + '=' + s)
-                .collect(joining("&")));
-        this.appendedQuery = builder.toString();
+        this.query().join(stream(values).map(String::valueOf).map(s -> name + '=' + s).toArray());
         return this;
-    }
-
-    private void validate(Object[] values) {
-        if (this.schemeSpecificPart != null) {
-            throw new UnsupportedOperationException("This URI is opaque: " + toString());
-        }
-        if (stream(values).anyMatch(s -> s instanceof URITemplateVariable)) {
-            this.template = true;
-        }
     }
 
     public boolean isTemplate() {
@@ -443,14 +434,14 @@ public class URIBuilder {
             throw new IllegalStateException("This URI is template: " + toDecodedString());
         }
         try {
-            String fragment = merge(false, this.fragment, this.appendedFragment, "");
+            String fragment = merge(false, this.fragment, this.appendedFragment);
             if (isOpaque()) {
-                String ssp = merge(false, this.schemeSpecificPart, this.appendedSsp, "");
+                String ssp = merge(false, this.schemeSpecificPart, this.appendedSsp);
                 return new URI(scheme, ssp, fragment);
             } else {
-                String host = merge(false, this.host, this.appendedHost, "");
-                String path = merge(false, this.path, this.appendedPath, "");
-                String query = merge(false, this.query, this.appendedQuery, "&");
+                String host = merge(false, this.host, this.appendedHost);
+                String path = merge(false, this.path, this.appendedPath);
+                String query = merge(false, this.query, this.appendedQuery);
                 URI uri = new URI(scheme, userInfo, host, port, path, query, fragment);
                 return uri.normalize();
             }
@@ -459,11 +450,11 @@ public class URIBuilder {
         }
     }
 
-    private String merge(boolean encode, String uriPart, String appendedPart, String delimiter) {
+    private String merge(boolean encode, String uriPart, String appendedPart) {
         if (uriPart == null || uriPart.isEmpty()) return appendedPart;
         String prefix = encode ? encodePartIgnoreDelimiters(uriPart) : uriPart;
         if (appendedPart == null) return prefix;
-        return prefix + delimiter + appendedPart;
+        return prefix + appendedPart;
     }
 
     private String encodePartIgnoreDelimiters(String uriPart) {
@@ -502,10 +493,10 @@ public class URIBuilder {
     }
 
     private String toDecodedString() {
-        String host = merge(true, this.host, this.appendedHost, "");
-        String path = merge(true, this.path, this.appendedPath, "");
-        String query = merge(true, this.query, this.appendedQuery, "&");
-        String fragment = merge(true, this.fragment, this.appendedFragment, "");
+        String host = merge(true, this.host, this.appendedHost);
+        String path = merge(true, this.path, this.appendedPath);
+        String query = merge(true, this.query, this.appendedQuery);
+        String fragment = merge(true, this.fragment, this.appendedFragment);
         StringBuilder sb = new StringBuilder();
         if (scheme != null) {
             sb.append(scheme);
@@ -538,22 +529,19 @@ public class URIBuilder {
                 sb.append("//");
                 sb.append(authority);
             }
-            if (path != null)
-                sb.append(path);
-            if (query != null) {
-                if (!query.startsWith("{?")) {
-                    sb.append('?');
-                }
-                sb.append(query);
-            }
+            append(sb, '/', path);
+            append(sb, '?', query);
         }
-        if (fragment != null) {
-            if (!fragment.startsWith("{#")) {
-                sb.append('#');
-            }
-            sb.append(fragment);
-        }
+        append(sb, '#', fragment);
         return sb.toString();
+    }
+
+    private void append(StringBuilder buffer, char prefix, String value) {
+        if (value == null || value.isEmpty()) return;
+        if (!value.startsWith(String.valueOf(prefix)) && !value.startsWith("{" + prefix)) {
+            buffer.append(prefix);
+        }
+        buffer.append(value);
     }
 
     /**
@@ -570,39 +558,26 @@ public class URIBuilder {
     /**
      * DSL for constructing components of the URI
      */
-    public class Fragment {
-        private final Supplier<String> originalValue;
-        private final Consumer<String> updatedValue;
-        private String prefix;
-        private String delimiter;
+    public class URIPartBuilder {
+        private final Supplier<String> initialValue;
+        private final Consumer<String> replaceInitialValue;
+        private final Supplier<String> appendedValue;
+        private Character delimiter;
+        private Character currentDelimiter;
         private final Consumer<Object> consumer;
 
-
-        Fragment(Supplier<String> originalValue,
-                 Consumer<String> updatedValue,
-                 String prefix, String delimiter, Consumer<Object> consumer) {
-            this.originalValue = originalValue;
-            this.updatedValue = updatedValue;
-            this.prefix = prefix;
+        URIPartBuilder(Supplier<String> initialValue,
+                       Consumer<String> replaceInitialValue,
+                       Character delimiter,
+                       Character currentDelimiter,
+                       Consumer<Object> consumer,
+                       Supplier<String> appendedValue) {
+            this.initialValue = initialValue;
+            this.replaceInitialValue = replaceInitialValue;
+            this.appendedValue = appendedValue;
+            this.currentDelimiter = currentDelimiter;
             this.delimiter = delimiter;
             this.consumer = consumer;
-        }
-
-        Fragment(String prefix, String delimiter, Consumer<Object> consumer) {
-            this(null, null, prefix, delimiter, consumer);
-        }
-
-        /**
-         * Set new prefix for the {@link #join(Object...)} method (applicable only for opaque URIs)
-         * @param newPrefix prefix to use in join() method
-         * @return this
-         */
-        public Fragment prefix(String newPrefix) {
-            if (this.prefix != null) {
-                throw new IllegalStateException("Prefix already set: '" + prefix + "'");
-            }
-            this.prefix = newPrefix;
-            return this;
         }
 
         /**
@@ -610,7 +585,7 @@ public class URIBuilder {
          * @param newDelimiter delimiter to use in join() method
          * @return this
          */
-        public Fragment delimiter(String newDelimiter) {
+        public URIPartBuilder delimiter(Character newDelimiter) {
             if (this.delimiter != null) {
                 throw new IllegalStateException("Delimiter already set: '" + delimiter + "'");
             }
@@ -625,6 +600,9 @@ public class URIBuilder {
          */
         public URIBuilder append(Object... values) {
             for (Object value : values) {
+                if (value instanceof URITemplateVariable) {
+                    URIBuilder.this.template = true;
+                }
                 consumer.accept(value);
             }
             return URIBuilder.this;
@@ -639,9 +617,15 @@ public class URIBuilder {
          * @return URIBuilder.this
          */
         public URIBuilder join(Object... values) {
-            String currentDelimiter = prefix;
             for (Object value : values) {
-                if (currentDelimiter != null) {
+                boolean includeDelimiter = currentDelimiter != null;
+                if (value instanceof URITemplateVariable) {
+                    URIBuilder.this.template = true;
+                    Optional<URITemplateModifier> modifier = ((URITemplateVariable) value).modifier();
+                    includeDelimiter = currentDelimiter != null
+                            && (!modifier.isPresent() || !currentDelimiter.equals(modifier.get().modifierChar()));
+                }
+                if (includeDelimiter) {
                     consumer.accept(currentDelimiter);
                 }
                 consumer.accept(value);
@@ -658,13 +642,19 @@ public class URIBuilder {
          * @return URIBuilder.this
          */
         public URIBuilder replace(String substring, String newValue) {
-            if (originalValue == null || this.updatedValue == null) {
+            if (initialValue == null || this.replaceInitialValue == null) {
                 throw new UnsupportedOperationException("Content of this fragment cannot be replaced");
             }
-            String result = originalValue.get().replace(substring, newValue);
-            updatedValue.accept(result);
+            String result = initialValue.get().replace(substring, newValue);
+            replaceInitialValue.accept(result);
             return URIBuilder.this;
         }
+
+        @Override
+        public String toString() {
+            return merge(template, initialValue.get(), appendedValue.get());
+        }
+
     }
 
 

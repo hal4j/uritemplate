@@ -46,7 +46,7 @@ class OpaqueURIBuilderTest {
     @Test
     void shouldConcatenateSSPWithDelimiter() {
         URI uri = URIFactory.opaque("rel")
-                .ssp().delimiter(":").join("1", "2", "3")
+                .ssp().delimiter(':').join("1", "2", "3")
                 .toURI();
         assertTrue(uri.isOpaque());
         assertEquals("rel", uri.getScheme());
@@ -58,7 +58,8 @@ class OpaqueURIBuilderTest {
     @Test
     void shouldConcatenateSSPWithPrefix() {
         URI uri = URIFactory.opaque("rel")
-                .ssp().prefix(":").delimiter("-").join("1", "2", "3")
+                .ssp().append(":")
+                .ssp().delimiter('-').join("1", "2", "3")
                 .toURI();
         assertTrue(uri.isOpaque());
         assertEquals("rel", uri.getScheme());
@@ -71,7 +72,7 @@ class OpaqueURIBuilderTest {
     void shouldConcatenateFragmentWithDelimiter() {
         URI uri = URIFactory.opaque("rel")
                 .ssp("test")
-                .fragment().delimiter("/").join("1", "2", "3")
+                .fragment().delimiter('/').join("1", "2", "3")
                 .toURI();
         assertTrue(uri.isOpaque());
         assertEquals("rel", uri.getScheme());

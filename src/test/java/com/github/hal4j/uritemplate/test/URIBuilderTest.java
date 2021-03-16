@@ -137,6 +137,14 @@ class URIBuilderTest {
     }
 
     @Test
+    void shouldApplyPathJoinCorrectly() {
+        String s = basedOn("http://www.example.com?val1=%25")
+                .path().join("api", template("id"))
+                .toString();
+        assertEquals("http://www.example.com/api/{id}?val1=%25", s);
+    }
+
+    @Test
     void shouldApplyPartSpecificJoinCorrectly() {
         String s = basedOn("http://www.example.com?val1=%25")
                 .path().join("api", "subpath")
@@ -155,7 +163,7 @@ class URIBuilderTest {
     @Test
     void shouldApplyPartSpecificAppendCorrectlyInTemplate() {
         String s = basedOn("http://www.example.com?key=value")
-                .path().append("/api", "subpath")
+                .path().append("api", "subpath")
                 .asTemplate()
                 .toString();
         assertEquals("http://www.example.com/apisubpath?key=value", s);
