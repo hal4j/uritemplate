@@ -4,11 +4,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static java.lang.String.join;
 import static java.lang.String.valueOf;
-import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.*;
 
 public class URITemplateFormat {
 
@@ -24,6 +25,7 @@ public class URITemplateFormat {
     public static final String DEFAULT_DELIMITER_STRING = valueOf(DEFAULT_DELIMITER);
     public static final char PREFIX_SEPARATOR = ':';
     public static final String MODIFIERS = "+#./;&?=,!@|:";
+    private static final Function<Object, String> NO_TRUNCATE = String::valueOf;
 
     private boolean explode;
 
@@ -100,7 +102,8 @@ public class URITemplateFormat {
         int counter = 0;
         for (Iterator<String> iterator = remaining.iterator(); iterator.hasNext();) {
             String name = iterator.next();
-            Function<Object, String> truncate = String::valueOf;
+            Function<Object, String> truncate = NO_TRUNCATE;
+
             int pos = name.indexOf(PREFIX_SEPARATOR);
             if (pos > 0) {
                 String number = name.substring(pos + 1);
@@ -112,13 +115,17 @@ public class URITemplateFormat {
                     // ignore
                 }
             }
-            if (parameters.containsKey(name)) {
+
+            Object substitution = parameters.get(name);
+
+            if (substitution != null) {
                 if (!missing.isEmpty()) {
                     appendTemplate(builder, counter == 0, missing);
                     counter += missing.size();
                     missing.clear();
                 }
-                Collection<String> values = collect(parameters.get(name), truncate);
+                boolean named = this.named || (explode && substitution instanceof Map); // always named for exploded associative arrays (e.g. 3.2.6)
+                List<Pair> values = collect(name, substitution, truncate);
                 if (values.size() > 0) {
                     if (builder.length() == 0) {
                         if (renderPrefix) {
@@ -130,12 +137,11 @@ public class URITemplateFormat {
                     String prefix = named ? name + '=' : "";
                     if (explode && itemSeparator != null) {
                         builder.append(values.stream()
-                                .map(val -> prefix + val)
+                                .map(entry -> (named ? entry.key() + '=' : "") + entry.value())
                                 .collect(joining(itemSeparator + "")));
                     } else {
                         builder.append(prefix);
-                        builder.append(values.stream()
-                                .collect(joining(DEFAULT_DELIMITER_STRING)));
+                        builder.append(values.stream().map(Pair::value).collect(joining(DEFAULT_DELIMITER_STRING)));
                     }
                 }
                 iterator.remove();
@@ -166,24 +172,30 @@ public class URITemplateFormat {
         } else if (itemSeparator != null) {
             builder.append(itemSeparator);
         }
-        builder.append(vars.stream().collect(joining(DEFAULT_DELIMITER_STRING)));
+        builder.append(join(DEFAULT_DELIMITER_STRING, vars));
         if (explode) {
             builder.append(EXPLODE_FLAG);
         }
         builder.append('}');
     }
 
-    private Collection<String> collect(Object object, Function<Object, String> truncate) {
+    private List<Pair> collect(String name, Object object, Function<Object, String> truncate) {
         if (object == null) return Collections.emptyList();
-        if (object instanceof Iterable) {
-            return StreamSupport.stream(((Iterable<?>) object).spliterator(), false)
-                    .map(o -> toString(o, truncate))
-                    .collect(toList());
+        List<Pair> map = new ArrayList<>();
+        if (object instanceof Map) {
+            if (explode) {
+                ((Map<?, ?>) object).forEach((key, value) -> map.add(new Pair(toString(key, NO_TRUNCATE), toString(value, NO_TRUNCATE))));
+            } else {
+                String value = ((Map<String, Object>) object).entrySet().stream().flatMap(entry -> Stream.of(entry.getKey(), toString(entry.getValue(), NO_TRUNCATE))).collect(joining(","));
+                map.add(new Pair(name, value));
+            }
+        } else if (object instanceof Iterable) {
+            ((Iterable<?>) object).forEach(entry -> map.add(new Pair(name, toString(entry, NO_TRUNCATE))));
         } else {
-            return Collections.singletonList(toString(object, truncate));
+            map.add(new Pair(name, toString(object, truncate)));
         }
+        return map;
     }
-
     @SuppressWarnings("unchecked")
     private String toString(Object object, Function<Object, String> truncate) {
         try {
@@ -204,6 +216,22 @@ public class URITemplateFormat {
         StringBuilder builder = new StringBuilder();
         appendTemplate(builder, true, Collections.singletonList(name));
         return builder.toString();
+    }
+
+    private final static class Pair {
+        private final String key;
+        private final String value;
+        public Pair(String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+        public String key() {
+            return this.key;
+        }
+        public String value() {
+            return this.value;
+        }
+
     }
 
 }
