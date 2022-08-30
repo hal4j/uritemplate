@@ -10,13 +10,6 @@
     <description>Java implementation of RFC 6570 "URI Templates"</description>
     <url>https://github.com/hal4j/uritemplate</url>
 
-    <developers>
-        <developer>
-            <name>Ivan Gammel</name>
-            <email>oss@gammel.ru</email>
-        </developer>
-    </developers>
-
     <licenses>
         <license>
             <name>Apache License Version 2.0</name>
@@ -47,7 +40,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
-        <junit.jupiter.version>5.7.0</junit.jupiter.version>
+        <junit.jupiter.version>5.9.0</junit.jupiter.version>
         <junit.platform.version>1.3.2</junit.platform.version>
     </properties>
 
@@ -80,7 +73,7 @@
                     <dependency>
                         <groupId>org.ow2.asm</groupId>
                         <artifactId>asm</artifactId>
-                        <version>9.0</version> <!-- Use newer version of ASM -->
+                        <version>9.3</version> <!-- Use newer version of ASM -->
                     </dependency>
                 </dependencies>
             </plugin>
