@@ -60,7 +60,7 @@ public class URITemplateFormat {
                 named = true;
                 break;
             case MATRIX_SEPARATOR:
-                named = explode;
+                named = true;
                 break;
             case FRAGMENT_START:
                 prefix = FRAGMENT_START;
