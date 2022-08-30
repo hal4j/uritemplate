@@ -116,14 +116,14 @@ public class URITemplateFormat {
                 }
             }
 
-            Object substitution = parameters.get(name);
 
-            if (substitution != null) {
+            if (parameters.containsKey(name)) {
                 if (!missing.isEmpty()) {
                     appendTemplate(builder, counter == 0, missing);
                     counter += missing.size();
                     missing.clear();
                 }
+                Object substitution = parameters.get(name);
                 boolean named = this.named || (explode && substitution instanceof Map); // always named for exploded associative arrays (e.g. 3.2.6)
                 List<Pair> values = collect(name, substitution, truncate);
                 if (values.size() > 0) {
