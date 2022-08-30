@@ -10,6 +10,13 @@
     <description>Java implementation of RFC 6570 "URI Templates"</description>
     <url>https://github.com/hal4j/uritemplate</url>
 
+    <developers>
+        <developer>
+            <name>Ivan Gammel</name>
+            <email>oss@gammel.ru</email>
+        </developer>
+    </developers>
+
     <licenses>
         <license>
             <name>Apache License Version 2.0</name>
