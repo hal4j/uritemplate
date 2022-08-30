@@ -106,5 +106,24 @@ public class Issue1Test {
         assertEquals("/path1SF/Hello/One,Two,Three/property1,zx,property2,qx?qp2=One&qp2=Two&qp2=Three&qp1=Hello&property1=zx&property2=qx", s);
     }
 
+    @Test
+    public void shouldExpandPathLikeNoExplodeAsInBugReport() {
+        List<String> p2 = asList("One", "Two", "Three");
+        Map<String, String> p3 = new LinkedHashMap<>();
+        p3.put("zx", "80");
+        p3.put("dragon", "32k");
+
+        Map<String, Object> vars = new LinkedHashMap<>();
+        vars.put("p1", "Hello");
+        vars.put("p2", p2);
+        vars.put("p3", p3);
+
+        String s = new URITemplate("/path1/{;p1}/{;p2}/{;p3}")
+                .expand(vars)
+                .toString();
+
+        assertEquals("/path1/;p1=Hello/;p2=One,Two,Three/;p3=zx,80,dragon,32k", s);
+    }
+
 
 }

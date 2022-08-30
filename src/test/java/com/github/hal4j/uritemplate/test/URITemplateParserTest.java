@@ -294,7 +294,7 @@ class URITemplateParserTest {
     @Test
     void shouldExpandPathLikeExpression() {
         String uri = "path{;list}";
-        String expected = "path;red,green,blue";
+        String expected = "path;list=red,green,blue";
         String result = parseAndExpand(uri, LIST);
         assertEquals(expected, result);
     }
