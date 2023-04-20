@@ -336,7 +336,7 @@ public class URIBuilder {
     public URIPartBuilder query() {
         assertNotOpaque();
         return new URIPartBuilder(() -> this.query, (String value) -> this.query = value,
-                '&', this.query == null ? null : '&',
+                '&', (this.query == null && this.appendedQuery == null) ? null : '&',
                 object -> append(this.appendedQuery, object, value -> this.appendedQuery = value),
                 () -> this.appendedQuery);
     }
