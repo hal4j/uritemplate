@@ -621,9 +621,9 @@ public class URIBuilder {
                 boolean includeDelimiter = currentDelimiter != null;
                 if (value instanceof URITemplateVariable) {
                     URIBuilder.this.template = true;
-                    Optional<URITemplateModifier> modifier = ((URITemplateVariable) value).modifier();
+                    Optional<URITemplateOperator> modifier = ((URITemplateVariable) value).modifier();
                     includeDelimiter = currentDelimiter != null
-                            && (!modifier.isPresent() || !currentDelimiter.equals(modifier.get().modifierChar()));
+                            && (!modifier.isPresent() || !currentDelimiter.equals(modifier.get().operatorChar()));
                 }
                 if (includeDelimiter) {
                     consumer.accept(currentDelimiter);

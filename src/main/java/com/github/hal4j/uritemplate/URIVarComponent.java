@@ -1,8 +1,8 @@
 package com.github.hal4j.uritemplate;
 
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
+import static com.github.hal4j.uritemplate.URITemplateParser.DISCARDED;
 import static java.lang.String.format;
 
 public class URIVarComponent {
@@ -45,8 +45,9 @@ public class URIVarComponent {
     private final boolean explode;
 
     public static URIVarComponent parse(String spec) {
+        if (spec.length() < 1) throw new URITemplateSyntaxException("Component name cannot be empty");
         boolean explode = spec.charAt(spec.length() - 1) == EXPLODE_MODIFIER;
-        int idx = spec.indexOf(':');
+        int idx = spec.indexOf(':', 1);
         if (idx == 0) {
             throw new URITemplateSyntaxException(format("Name not specified in varspec:\"%s\"", spec));
         } else if (idx == spec.length() - 1) {
@@ -133,4 +134,11 @@ public class URIVarComponent {
     }
 
 
+    public boolean expandTo(ParamHolder substitutions, StringBuilder result, boolean isFirst, URITemplateOperator modifier) {
+        Object value = substitutions.get(name);
+        if (value == null) { // empty (do not substitute)
+            return false;
+        }
+        return modifier.behavior().expand(name, value, explode, prefixLength, isFirst, result);
+    }
 }

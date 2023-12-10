@@ -2,6 +2,8 @@ package com.github.hal4j.uritemplate;
 
 import java.util.Map;
 
+import static com.github.hal4j.uritemplate.URITemplateParser.DISCARDED;
+
 public interface ParamHolder {
 
     boolean containsKey(String name);
@@ -42,6 +44,10 @@ public interface ParamHolder {
         };
     }
 
+    default boolean ignore(String name) {
+        return get(name) == DISCARDED;
+    }
+
     class ParamMap implements ParamHolder {
         private final Map<String, ?> params;
         ParamMap(Map<String, ?> params) {
@@ -73,7 +79,13 @@ public interface ParamHolder {
         }
 
         @Override
+        public boolean ignore(String name) {
+            return false;
+        }
+
+        @Override
         public Object get(String name) {
+            if (index >= array.length) return null;
             return array[index++];
         }
     }
