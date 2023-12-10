@@ -37,7 +37,7 @@ public class Issue1Test {
         Map<String, Object> vars = new HashMap<>();
         vars.put("keys", keys);
         String s = new URITemplate("https://www.example.com{?keys*}")
-                .expand(vars)
+                .expandPartial(vars)
                 .toString();
         assertEquals("https://www.example.com?semi=%3B&dot=.&comma=%2C", s);
     }
@@ -51,7 +51,7 @@ public class Issue1Test {
         Map<String, Object> vars = new HashMap<>();
         vars.put("keys", keys);
         String s = new URITemplate("https://www.example.com{?keys}")
-                .expand(vars)
+                .expandPartial(vars)
                 .toString();
         assertEquals("https://www.example.com?keys=semi,%3B,dot,.,comma,%2C", s);
     }
@@ -65,7 +65,7 @@ public class Issue1Test {
         Map<String, Object> vars = new HashMap<>();
         vars.put("keys", keys);
         String s = new URITemplate("https://www.example.com{/keys*}")
-                .expand(vars)
+                .expandPartial(vars)
                 .toString();
         assertEquals("https://www.example.com/semi=%3B/dot=./comma=%2C", s);
     }
@@ -79,7 +79,7 @@ public class Issue1Test {
         Map<String, Object> vars = new HashMap<>();
         vars.put("keys", keys);
         String s = new URITemplate("https://www.example.com{/keys}")
-                .expand(vars)
+                .expandPartial(vars)
                 .toString();
         assertEquals("https://www.example.com/semi,%3B,dot,.,comma,%2C", s);
     }
@@ -100,7 +100,7 @@ public class Issue1Test {
         vars.put("qp3", p3);
 
         String s = new URITemplate("/path1SF/{p1}/{p2}/{p3}{?qp2*}{&qp1*}{&qp3*}")
-                .expand(vars)
+                .expandPartial(vars)
                 .toString();
 
         assertEquals("/path1SF/Hello/One,Two,Three/property1,zx,property2,qx?qp2=One&qp2=Two&qp2=Three&qp1=Hello&property1=zx&property2=qx", s);
@@ -119,7 +119,7 @@ public class Issue1Test {
         vars.put("p3", p3);
 
         String s = new URITemplate("/path1/{;p1}/{;p2}/{;p3}")
-                .expand(vars)
+                .expandPartial(vars)
                 .toString();
 
         assertEquals("/path1/;p1=Hello/;p2=One,Two,Three/;p3=zx,80,dragon,32k", s);

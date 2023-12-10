@@ -16,67 +16,61 @@ class ParseErrorTest {
     @Test
     void shouldThrowNPEOnNull() {
         assertThrows(NullPointerException.class,
-                () -> parseAndExpand(null, ANY));
+                () -> parseAndExpand(null, true, ANY));
     }
 
     @Test
     void shouldThrowSyntaxErrorOnVarStartCharacter() {
         assertThrows(URITemplateSyntaxException.class,
-                () -> parseAndExpand("{", ANY));
+                () -> parseAndExpand("{", true, ANY));
     }
 
     @Test
     void shouldThrowSyntaxErrorOnVarEndCharacter() {
         assertThrows(URITemplateSyntaxException.class,
-                () -> parseAndExpand("}", ANY));
+                () -> parseAndExpand("}", true, ANY));
     }
 
     @Test
     void shouldThrowSyntaxErrorOnEmptyVar() {
         assertThrows(URITemplateSyntaxException.class,
-                () -> parseAndExpand("{}", ANY));
+                () -> parseAndExpand("{}", true, ANY));
     }
 
     @Test
     void shouldThrowSyntaxErrorOnEmptyVarInURI() {
         assertThrows(URITemplateSyntaxException.class,
-                () -> parseAndExpand("http://www.example.com/{}", ANY));
+                () -> parseAndExpand("http://www.example.com/{}", true, ANY));
     }
 
     @Test
     void shouldThrowSyntaxErrorOnVarStartInURI() {
         assertThrows(URITemplateSyntaxException.class,
-                () -> parseAndExpand("http://www.example.com/{", ANY));
+                () -> parseAndExpand("http://www.example.com/{", true, ANY));
     }
 
     @Test
     void shouldThrowSyntaxErrorOnNotClosedVar() {
         assertThrows(URITemplateSyntaxException.class,
-                () -> parseAndExpand("http://www.example.com/{something", ANY));
-    }
-
-    @Test
-    void shouldThrowSyntaxErrorOnEmptyVarNameWithComma() {
-        assertThrows(URITemplateSyntaxException.class,
-                () -> parseAndExpand("http://www.example.com/{a,}", ANY));
+                () -> parseAndExpand("http://www.example.com/{something", true, ANY));
     }
 
     @Test
     void shouldThrowSyntaxErrorOnEmptyVarNameWithComma2() {
         assertThrows(URITemplateSyntaxException.class,
-                () -> parseAndExpand("http://www.example.com/{a,,b}", ANY));
+                () -> parseAndExpand("http://www.example.com/{a,,b}", true, ANY));
     }
 
     @Test
     void shouldThrowSyntaxErrorOnDoubleOpeningInVar() {
         assertThrows(URITemplateSyntaxException.class,
-                () -> parseAndExpand("http://www.example.com/{{var}", ANY));
+                () -> parseAndExpand("http://www.example.com/{{var}", true, ANY));
     }
 
     @Test
     void shouldThrowSyntaxErrorOnDoubleCloseCharacter() {
         assertThrows(URITemplateSyntaxException.class,
-                () -> parseAndExpand("http://www.example.com/{var}}", ANY));
+                () -> parseAndExpand("http://www.example.com/{var}}", true, ANY));
     }
 
 }

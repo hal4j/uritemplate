@@ -6,7 +6,6 @@ import java.util.*;
 import static com.github.hal4j.uritemplate.ParamHolder.discardMissing;
 import static com.github.hal4j.uritemplate.ParamHolder.map;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.StreamSupport.stream;
 
@@ -24,37 +23,27 @@ public class URITemplate {
      * @param string the string supposedly containing an URI template
      */
     public URITemplate(String string) {
+        if (string == null) throw new NullPointerException("URI template string cannot be null");
         this.value = string;
     }
 
     /**
-     * Substitute the value with given name in this template
-     * @param name the name of the template parameter
-     * @param value the value to substitute
+     * Fully expand this template using custom parameter holder
+     * @param params the custom parameter holder
      * @return new URI template containing the result of the expansion
      */
-    public URITemplate expand(String name, Object value) {
-        return expand(Collections.singletonMap(name, value));
+    public URITemplate expand(ParamHolder params) {
+        return expand(params, false);
     }
 
     /**
-     * Expand this template using given map of named substitutions
-     * @param substitutions the map of substituted values
+     * Fully or partially expand this template using custom parameter holder
+     * @param params the custom parameter holder
+     * @param partial indicates whether partial or full expansion must be performed
      * @return new URI template containing the result of the expansion
      */
-    public URITemplate expand(Map<String, ?> substitutions) {
-        String expanded = URITemplateParser.parseAndExpand(value, substitutions);
-        return new URITemplate(expanded);
-    }
-
-    public URITemplate discard(String... names) {
-        return this.discard(asList(names));
-    }
-
-    public URITemplate discard(Iterable<String> names) {
-        Map<String, Object> map = new HashMap<>();
-        names.forEach(name -> map.put(name, emptyList()));
-        String expanded = URITemplateParser.parseAndExpand(value, map);
+    public URITemplate expand(ParamHolder params, boolean partial) {
+        String expanded = URITemplateParser.parseAndExpand(value, partial, params);
         return new URITemplate(expanded);
     }
 
@@ -64,29 +53,70 @@ public class URITemplate {
      * @param substitutions the map of substituted values
      * @return new URI template containing the result of the expansion
      */
-    public URITemplate expandOnly(Map<String, ?> substitutions) {
-        String expanded = URITemplateParser.parseAndExpand(value, discardMissing(map(substitutions)));
-        return new URITemplate(expanded);
+    public URITemplate expand(Map<String, ?> substitutions) {
+        return expand(discardMissing(map(substitutions)), false);
     }
 
     /**
-     * Expand this template using given substitution values.
+     * Fully expand this template using given substitution values.
      * @see com.github.hal4j.uritemplate.ParamHolder.ParamArray for details.
      * @param substitutions the substituted values
      * @return new URI template containing the result of the expansion
      */
     public URITemplate expand(Object... substitutions) {
-        String expanded = URITemplateParser.parseAndExpand(value, substitutions);
+        String expanded = URITemplateParser.parseAndExpand(value, false, substitutions);
         return new URITemplate(expanded);
     }
 
     /**
-     * Expand this template using custom parameter holder
-     * @param params the custom parameter holder
+     * Substitute the value with given name in this template, keeping remaining variables in the resulting template
+     * @param name the name of the template parameter
+     * @param value the value to substitute
      * @return new URI template containing the result of the expansion
      */
-    public URITemplate expand(ParamHolder params) {
-        String expanded = URITemplateParser.parseAndExpand(value, params);
+    public URITemplate expandPartial(String name, Object value) {
+        return expandPartial(Collections.singletonMap(name, value));
+    }
+
+    /**
+     * Expand this template using given map of named substitutions and keep variables with missing values in the resulting template.
+     * @param substitutions the map of substituted values
+     * @return new URI template containing the result of the expansion
+     */
+    public URITemplate expandPartial(Map<String, ?> substitutions) {
+        String expanded = URITemplateParser.parseAndExpand(value, true, substitutions);
+        return new URITemplate(expanded);
+    }
+
+    /**
+     * Expand this template using given substitution values and keep variables with missing values in the resulting template.
+     * @see com.github.hal4j.uritemplate.ParamHolder.ParamArray for details.
+     * @param substitutions the substituted values
+     * @return new URI template containing the result of the expansion
+     */
+    public URITemplate expandPartial(Object... substitutions) {
+        String expanded = URITemplateParser.parseAndExpand(value, true, substitutions);
+        return new URITemplate(expanded);
+    }
+
+    /**
+     * Removes variables with given names from this template
+     * @param names the names of the variables
+     * @return new URI template without variables with given names
+     */
+    public URITemplate discard(String... names) {
+        return this.discard(asList(names));
+    }
+
+    /**
+     * Removes variables with given names from this template
+     * @param names the names of the variables
+     * @return new URI template without variables with given names
+     */
+    public URITemplate discard(Iterable<String> names) {
+        Map<String, Object> map = new HashMap<>();
+        names.forEach(name -> map.put(name, URITemplateParser.DISCARDED));
+        String expanded = URITemplateParser.parseAndExpand(value, true, map);
         return new URITemplate(expanded);
     }
 
@@ -96,6 +126,21 @@ public class URITemplate {
      */
     public boolean isExpanded() {
         return value.indexOf('{') < 0;
+    }
+
+    /**
+     * Parses the template and returns list of found template variables in the order of their occurence.
+     * @return list of parameters in this template or empty list if template is fully expanded.
+     */
+    public List<URITemplateVariable> variables() {
+        List<URITemplateVariable> vars = new ArrayList<>();
+        URITemplateParser.parse(value, new URITemplateParserListener.Adapter() {
+            @Override
+            public void onVariable(URITemplateVariable var) {
+                vars.add(var);
+            }
+        });
+        return vars;
     }
 
     /**
@@ -119,6 +164,19 @@ public class URITemplate {
         return new URIBuilder(toURI());
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        URITemplate that = (URITemplate) o;
+        return Objects.equals(value, that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value);
+    }
+
     /**
      * Returns the original value of this template
      * @return this template as a string
@@ -127,18 +185,4 @@ public class URITemplate {
         return this.value;
     }
 
-    /**
-     * Parses the template and returns list of found template variables in the order of their occurence.
-     * @return list of parameters in this template or empty list if template is fully expanded.
-     */
-    public List<URITemplateVariable> variables() {
-        List<URITemplateVariable> vars = new ArrayList<>();
-        URITemplateParser.parse(value, new URITemplateParserListener.Adapter() {
-            @Override
-            public void onVariable(URITemplateVariable var) {
-                vars.add(var);
-            }
-        });
-        return vars;
-    }
 }

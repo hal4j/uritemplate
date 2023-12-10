@@ -1,6 +1,6 @@
 package com.github.hal4j.uritemplate.test;
 
-import com.github.hal4j.uritemplate.URITemplateModifier;
+import com.github.hal4j.uritemplate.URITemplateOperator;
 import com.github.hal4j.uritemplate.URITemplateSyntaxException;
 import com.github.hal4j.uritemplate.URITemplateVariable;
 import org.junit.jupiter.api.Assertions;
@@ -8,7 +8,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
-import static com.github.hal4j.uritemplate.URITemplateModifier.valueOf;
+import static com.github.hal4j.uritemplate.URITemplateOperator.NONE;
+import static com.github.hal4j.uritemplate.URITemplateOperator.valueOf;
 import static com.github.hal4j.uritemplate.URITemplateVariable.template;
 import static com.github.hal4j.uritemplate.URIVarComponent.prefix;
 import static com.github.hal4j.uritemplate.URIVarComponent.var;
@@ -33,7 +34,7 @@ class URITemplateVariableTest {
     void shouldCorrectlyParseWrappedName() {
         URITemplateVariable var = URITemplateVariable.parse("{?id,name*}");
         assertTrue(var.modifier().isPresent());
-        assertEquals('?', var.modifier().get().modifierChar());
+        assertEquals('?', var.modifier().get().operatorChar());
         assertEquals(2, var.components().size());
         assertEquals("id", var.components().get(0).name());
         assertEquals("name", var.components().get(1).name());
@@ -50,7 +51,9 @@ class URITemplateVariableTest {
     @Test
     void shouldRejectVarNameStartingWithModifierCharacter() {
         AdvancedAssertions.assertForEach(
-                Arrays.stream(URITemplateModifier.values()).map(URITemplateModifier::modifierChar),
+                Arrays.stream(URITemplateOperator.values())
+                        .filter(m -> m != NONE)
+                        .map(URITemplateOperator::operatorChar),
                 character -> Assertions.assertThrows(URITemplateSyntaxException.class,
                         () -> URITemplateVariable.template(character + SOME_NAME),
                         "Should reject name starting with \"" + character + "\""));
@@ -60,14 +63,14 @@ class URITemplateVariableTest {
     void shouldCorrectlyParseNameWithValidModifier() {
         URITemplateVariable var = URITemplateVariable.parse(SOME_VALID_MODIFIER + SOME_NAME);
         assertTrue(var.modifier().isPresent());
-        assertEquals(SOME_VALID_MODIFIER, var.modifier().get().modifierChar());
+        assertEquals(SOME_VALID_MODIFIER, var.modifier().get().operatorChar());
         assertEquals(1, var.components().size());
         assertEquals(SOME_NAME, var.components().get(0).name());
     }
 
     @Test
     void shouldCorrectlyBuildComplexExample() {
-        URITemplateModifier mod = valueOf(SOME_VALID_MODIFIER).orElse(null);
+        URITemplateOperator mod = valueOf(SOME_VALID_MODIFIER).orElse(null);
         URITemplateVariable var = template(mod, var(SOME_NAME), prefix(PREFIXED_NAME, SOME_PREFIX));
         assertEquals(mod, var.modifier().orElse(null));
         assertEquals(2, var.components().size());
@@ -78,7 +81,7 @@ class URITemplateVariableTest {
 
     @Test
     void shouldCorrectlySerializeComplexExample() {
-        URITemplateModifier mod = valueOf(SOME_VALID_MODIFIER).orElse(null);
+        URITemplateOperator mod = valueOf(SOME_VALID_MODIFIER).orElse(null);
         URITemplateVariable var = template(mod, var(SOME_NAME), prefix(PREFIXED_NAME, SOME_PREFIX));
         String s = var.toString();
         assertEquals(wrap(SOME_VALID_MODIFIER + SOME_NAME + ',' + PREFIXED_NAME + ':' + SOME_PREFIX), s);

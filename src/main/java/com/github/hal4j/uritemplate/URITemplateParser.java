@@ -2,16 +2,20 @@ package com.github.hal4j.uritemplate;
 
 import java.util.Map;
 
-import static java.util.Arrays.asList;
-
 public class URITemplateParser {
 
-    public static String parseAndExpand(String value, Map<String, ?> substitutions) {
-        return parseAndExpand(value, new ParamHolder.ParamMap(substitutions));
+    static final Object DISCARDED = new Object();
+
+    public static String parseAndExpand(String value,
+                                        boolean partial,
+                                        Map<String, ?> substitutions) {
+        return parseAndExpand(value, partial, new ParamHolder.ParamMap(substitutions));
     }
 
-    public static String parseAndExpand(String value, Object... substitutions) {
-        return parseAndExpand(value, new ParamHolder.ParamArray(substitutions));
+    public static String parseAndExpand(String value,
+                                        boolean partial,
+                                        Object... substitutions) {
+        return parseAndExpand(value, partial, new ParamHolder.ParamArray(substitutions));
     }
 
     public static void parse(String value, URITemplateParserListener listener) {
@@ -52,7 +56,9 @@ public class URITemplateParser {
         listener.onCompleted();
     }
 
-    public static String parseAndExpand(String value, ParamHolder substitutions) {
+    public static String parseAndExpand(String value,
+                                        boolean partial,
+                                        ParamHolder substitutions) {
         if (value == null) {
             throw new NullPointerException("value");
         }
@@ -87,8 +93,7 @@ public class URITemplateParser {
                 if (tplCode.isEmpty()) {
                     throw new URITemplateSyntaxException(value);
                 }
-                String resolved = resolveTemplate(value, tplCode, substitutions);
-                result.append(resolved);
+                resolveTemplate(value, partial, tplCode, substitutions, result);
                 template.setLength(0);
                 resolve = false;
                 main = true;
@@ -100,21 +105,9 @@ public class URITemplateParser {
         return result.toString();
     }
 
-    private static String resolveTemplate(String value, String tpl, ParamHolder substitutions) {
-        char c = tpl.charAt(0);
-        boolean operator = URITemplateFormat.MODIFIERS.indexOf(c) >= 0;
-        char last = tpl.charAt(tpl.length() - 1);
-        boolean explode = last == URITemplateFormat.EXPLODE_FLAG;
-        String names = tpl.substring(operator ? 1 : 0, tpl.length() - (explode ? 1 : 0));
-        if (names.charAt(names.length() - 1) == URITemplateFormat.DEFAULT_DELIMITER) {
-            throw new URITemplateSyntaxException(value);
-        }
-        String[] vars = names.split(String.valueOf(URITemplateFormat.DEFAULT_DELIMITER));
-        for (String var : vars) {
-            if (var.isEmpty()) throw new URITemplateSyntaxException(value);
-        }
-        return URITemplateFormat.format(operator ? c : null, explode)
-                .render(asList(vars), substitutions);
+    private static void resolveTemplate(String value, boolean partial, String tpl, ParamHolder substitutions, StringBuilder result) {
+        URITemplateVariable template = URITemplateVariable.parse(tpl);
+        template.expandTo(substitutions, partial, result);
     }
 
 }

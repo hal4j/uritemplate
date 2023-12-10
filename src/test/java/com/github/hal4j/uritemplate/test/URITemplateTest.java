@@ -29,16 +29,16 @@ class URITemplateTest {
                     public Object get(String name) {
                         return values.get(name.toLowerCase());
                     }
-                }).toString();
+                }, true).toString();
         assertEquals("http://example.com/1?B=2{#C}", s);
     }
 
     @Test
     void shouldExpandPreEncodedValueCorrectly() {
         String s = new URITemplate("http://www.example{+tld}")
-                .expand("tld", "{.domain}")
+                .expandPartial("tld", "{.domain}")
                 .toString();
-        assertEquals("http://www.example{.domain}", s);
+        assertEquals("http://www.example%7B.domain%7D", s);
     }
 
     @Test
@@ -50,7 +50,7 @@ class URITemplateTest {
     @Test
     void shouldExpandUriTemplatePathCorrectly() {
         String s = new URITemplate("http://www.example.com{/path*}")
-                .expand("path", asList("1","2"))
+                .expandPartial("path", asList("1","2"))
                 .toString();
         assertEquals("http://www.example.com/1/2", s);
     }
@@ -58,7 +58,7 @@ class URITemplateTest {
     @Test
     void shouldExpandUriTemplateQueryCorrectly() {
         String s = new URITemplate("http://www.example.com/api{?param*}")
-                .expand("param", asList("1","2"))
+                .expandPartial("param", asList("1","2"))
                 .toString();
         assertEquals("http://www.example.com/api?param=1&param=2", s);
     }
@@ -66,14 +66,14 @@ class URITemplateTest {
     @Test
     void shouldExpandOpaqueURICorrectly() {
         String s = new URITemplate("rel{:param*}")
-                .expand("param", asList("1","2"))
+                .expandPartial("param", asList("1","2"))
                 .toString();
         assertEquals("rel:1:2", s);
     }
 
     @Test
     void shouldExpandPrefixWithURI() {
-        String s = new URITemplate("{+prefix}/api/v1{?query}").expand("https://www.example.com:8443").toString();
+        String s = new URITemplate("{+prefix}/api/v1{?query}").expandPartial("https://www.example.com:8443").toString();
         assertEquals("https://www.example.com:8443/api/v1{?query}", s);
     }
 
@@ -87,7 +87,7 @@ class URITemplateTest {
     @Test
     void shouldExpandOnlyRequestedParameters() {
         URITemplate template = new URITemplate("https://www.example.com/api{/uuid}{?utm_source}{&utm_campaign}");
-        String result = template.expandOnly(Collections.singletonMap("uuid", "1")).toString();
+        String result = template.expand(Collections.singletonMap("uuid", "1")).toString();
         assertEquals("https://www.example.com/api/1", result);
     }
 

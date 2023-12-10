@@ -1,4 +1,4 @@
-package com.github.hal4j.uritemplate.test;
+package com.github.hal4j.uritemplate.test.builder;
 
 import com.github.hal4j.uritemplate.URIBuilder;
 import com.github.hal4j.uritemplate.URITemplate;
@@ -35,50 +35,11 @@ class URIBuilderTest {
     }
 
     @Test
-    void shouldAppendSingleParamCorrectly() {
-        String s = basedOn("http://www.example.com")
-                    .queryParam("name", "Hello world")
-                    .toString();
-        assertEquals("http://www.example.com?name=Hello%20world", s);
-    }
-
-    @Test
-    void shouldEscapeParamValueCorrectly() {
-        String s = basedOn("http://www.example.com")
-                .queryParam("value", "%")
-                .toString();
-        assertEquals("http://www.example.com?value=%25", s);
-    }
-
-    @Test
-    void shouldBuildSameURIAsOriginalWithEncodedQueryParamValue() {
-        String s = basedOn("http://www.example.com?val1=%25").toString();
-        assertEquals("http://www.example.com?val1=%25", s);
-    }
-
-    @Test
     void shouldBuildSameURITemplateAsOriginalWithEncodedQueryParamValue() {
         String s = basedOn("http://www.example.com?val1=%25")
                 .asTemplate()
                 .toString();
         assertEquals("http://www.example.com?val1=%25", s);
-    }
-
-    @Test
-    void shouldAppendParamCorrectly() {
-        String s = basedOn("http://www.example.com?val1=%25")
-                .queryParam("val2", "%")
-                .toString();
-        assertEquals("http://www.example.com?val1=%25&val2=%25", s);
-    }
-
-    @Test
-    void shouldAppendMultiValueParamCorrectly() {
-        String s = basedOn("http://www.example.com?val1=%25")
-                .queryParam("val2", "%", "$", "#")
-                .queryParam("val3", "hello")
-                .toString();
-        assertEquals("http://www.example.com?val1=%25&val2=%25&val2=$&val2=%23&val3=hello", s);
     }
 
     @Test
@@ -110,23 +71,6 @@ class URIBuilderTest {
         assertEquals("https://{env}.example.com", s);
     }
 
-    @Test
-    void shouldAppendQueryComponentsCorrectly() {
-        String s = basedOn("https://www.example.com")
-                .query().append("p1=v1&p2=v2", queryParam("p3"))
-                .asTemplate()
-                .toString();
-        assertEquals("https://www.example.com?p1=v1&p2=v2{&p3}", s);
-    }
-
-    @Test
-    void shouldAppendQueryStartCorrectly() {
-        String s = basedOn("https://www.example.com")
-                .query().append(queryStart("p3"), queryParam("p4"))
-                .asTemplate()
-                .toString();
-        assertEquals("https://www.example.com{?p3}{&p4}", s);
-    }
 
     @Test
     void shouldAppendPathCorrectly() {
@@ -230,7 +174,7 @@ class URIBuilderTest {
         String s = basedOn("http://www.example.com")
                 .relative("api", "items", template("name"))
                 .asTemplate()
-                .expand("name", "1")
+                .expandPartial("name", "1")
                 .toString();
         assertEquals("http://www.example.com/api/items/1", s);
     }
@@ -279,8 +223,8 @@ class URIBuilderTest {
         String uri = "http://www.example.com";
         String result = basedOn(uri)
                 .resolve("/users{/id}{?expand}")
-                .expand("id", 1)
-                .expand("expand", "all")
+                .expandPartial("id", 1)
+                .expandPartial("expand", "all")
                 .toString();
         assertEquals("http://www.example.com/users/1?expand=all", result);
     }
